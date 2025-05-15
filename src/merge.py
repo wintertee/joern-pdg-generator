@@ -1,25 +1,24 @@
 import argparse
+
 import networkx as nx
+
+import langs.python
 from utils import (
-    read_dot_files,
-    read_dot_file,
-    write_dot_file,
-    merge_graphs,
     add_edge_label,
-    pretty_label,
     color_edge,
     color_node,
+    merge_graphs,
+    pretty_label,
+    read_dot_file,
+    read_dot_files,
+    write_dot_file,
 )
 
 
 def add_call_edges(merged_graph, ref_graph):
     for u, v, k, data in ref_graph.edges(keys=True, data=True):
         if data["label"] == "CALL":
-            merged_graph.add_edge(u, v, label="CALL")
-        if data["label"] == "ARGUMENT":
-            merged_graph.add_edge(u, v, label="ARGUMENT")
-        if data["label"] == "RECEIVER":
-            merged_graph.add_edge(u, v, label="RECEIVER")
+            merged_graph.add_edge(u, v, **data)
     return merged_graph
 
 
@@ -51,6 +50,10 @@ def main():
     merged_graph = merge_graphs(input_graphs)
     merged_graph = copy_node_data(merged_graph, refer_graph)
     merged_graph = add_call_edges(merged_graph, refer_graph)
+
+    # workaround: only support without ast
+    if args.ast is None:
+        merged_graph = langs.python.remove_bad_nodes(merged_graph)
 
     merged_graph = color_node(merged_graph)
     merged_graph = color_edge(merged_graph)

@@ -1,6 +1,6 @@
 import argparse
+
 import networkx as nx
-import os
 
 from cpg import CPG, CPGTemplate
 from utils import pretty_graph, read_dot_file, write_dot_file
@@ -12,7 +12,7 @@ node_filter: CPGTemplate = (
     + CPG.NAMESPACE
     # + CPG.METHOD
     + CPG.METHOD_PARAMETER_OUT
-    + CPG.TYPE
+    # + CPG.TYPE
     # + CPG.AST
     # + CPG.CALLGRAPH
     # + CPG.CFG
@@ -36,7 +36,7 @@ edge_filter: CPGTemplate = (
     + CPG.NAMESPACE
     # + CPG.METHOD
     + CPG.METHOD_PARAMETER_OUT
-    + CPG.TYPE
+    # + CPG.TYPE
     # + CPG.AST
     # + CPG.CALLGRAPH
     # + CPG.CFG
@@ -112,32 +112,16 @@ def delete_nodes_and_edges(input_file, output_file, node_labels_to_delete, edge_
     graph.remove_nodes_from(isolated_nodes)
     print(f"Removed {len(isolated_nodes)} isolated nodes")
 
-    # first delete node not connected to edge which is labeled as CFG
-    # nodes_to_remove = []
-    # for node in graph.nodes():
-    #     for u, v, data in list(graph.in_edges(node, data=True)) + list(graph.out_edges(node, data=True)):
-    #         if data.get("label") == "CFG":
-    #             print(f"Node {node} is connected to CFG edge ({u}, {v})")
-    #             break
-    #     else:
-    #         nodes_to_remove.append(node)
-    # graph.remove_nodes_from(nodes_to_remove)
-    # print(f"Removed {len(nodes_to_remove)} nodes not connected to CFG edges")
-
-    # Write the modified graph back to a file
-    # write_dot(graph, output_file)
-    # print(
-    #     f"Output graph with {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges written to {output_file}"
-    # )
+    for u, v, k, data in graph.edges(keys=True, data=True):
+        if data.get("label") == "REACHING_DEF":
+            data["label"] = f"DDG: {data.get('property', '')}"
+            if "property" in data.keys():
+                # Remove the property key from the data dictionary
+                del data["property"]
 
     # Render the graph as an SVG file
     graph = pretty_graph(graph)
     write_dot_file(graph, output_file)
-
-    # Render the graph as an SVG file
-    svg_output = os.path.splitext(output_file)[0] + ".svg"
-    nx.nx_agraph.to_agraph(graph).draw(svg_output, format="svg", prog="dot")
-    print(f"Graph rendered as SVG: {svg_output}")
 
 
 def main():

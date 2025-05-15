@@ -1,19 +1,21 @@
 class Helper:
-    def fn0(a, b):
-        x = 0
-        if a > b:
-            x = a
-        else:
-            x = b
-        return x
+    def __init__(self):
+        self.a = 100
+
+    def set(self, a):
+        self.a = a
 
 
-def fn1(c, helper_obj):
-    d = c + 1
-    y = helper_obj.fn0(c, d)  # Call Helper's static method
-    return y
+class Helper2(Helper):
+    pass
 
 
-helper_obj = Helper()
-result = fn1(5, helper_obj)  # Example call to fn1
-print(f"Result: {result}")
+def main():
+    
+    h = Helper()
+    h.set(1)
+
+    h2 = Helper2()
+    h2.set(1)
+
+main()

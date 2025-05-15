@@ -1,6 +1,7 @@
 # Project
 out/
-/cpg.bin
+cpg.bin
+workspace/
 
 
 # Byte-compiled / optimized / DLL files
