@@ -9,6 +9,6 @@ do
     joern-export --repr=$repr --out ./out/$repr
 done
 
-python src/merge.py --ast ./out/ast/* --cfg ./out/cfg/* --pdg ./out/pdg/* -r ./out/all/export.dot
+python src/merge.py --ast ./out/ast/* --cfg ./out/cfg/* --pdg ./out/pdg/* --ref ./out/all/export.dot --lang python
 # python src/filter.py 
 python -m xdot ./out/merged.dot

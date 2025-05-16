@@ -3,19 +3,19 @@ class Helper:
         self.a = 100
 
     def set(self, a):
-        self.a = a
-
-
-class Helper2(Helper):
-    pass
+        if a > 0:
+            self.a = a
+            return True
+        else:
+            self.a = 0
+            return False
 
 
 def main():
-    
     h = Helper()
-    h.set(1)
+    res = h.set(1)
+    print("Result:", res)
 
-    h2 = Helper2()
-    h2.set(1)
 
-main()
+if __name__ == "__main__":
+    main()

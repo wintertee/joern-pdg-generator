@@ -5,21 +5,23 @@ class Helper {
         this.a = 100;
     }
 
-    public void set(int a) {
-        this.a = a;
+    public bool set(int a) {
+        if (a > 0) {
+            this.a = a;
+            return true;
+        }
+        else {
+            this.a = 0;
+            return false;
+        }
     }
 }
 
-class Helper2 extends Helper {
-    // Inherits everything from Helper
-}
 
 public class Test {
     public static void main(String[] args) {
         Helper h = new Helper();
-        h.set(1);
-
-        Helper2 h2 = new Helper2();
-        h2.set(1);
+        res = h.set(1);
+        System.out.println("Result: " + res);
     }
 }

@@ -1,24 +1,25 @@
+#include <iostream>
+
 class Helper {
 public:
     int a;
 
     Helper() : a(100) {}
 
-    void set(int a) {
-        this->a = a;
+    bool set(int val) {
+        if (val > 0) {
+            a = val;
+            return true;
+        } else {
+            a = 0;
+            return false;
+        }
     }
-};
-
-class Helper2 : public Helper {
-    // Inherits everything from Helper
 };
 
 int main() {
     Helper h;
-    h.set(1);
-
-    Helper2 h2;
-    h2.set(1);
-
+    bool res = h.set(1);
+    std::cout << "Result: " << std::boolalpha << res << std::endl;
     return 0;
 }
