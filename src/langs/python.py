@@ -14,12 +14,12 @@ def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
 
     subroots = graph.neighbors(root)
 
-    def is_bad_root(data):
-        if data["label"] == "TYPE_DECL":
+    def is_bad_subroot(data):
+        if data["label"] == "TYPE_DECL" and "<meta>" in data["NAME"]:
             return True
         return False
 
-    good_subroots = [subroot for subroot in subroots if not is_bad_root(graph.nodes[subroot])]
+    good_subroots = [subroot for subroot in subroots if not is_bad_subroot(graph.nodes[subroot])]
 
     good_nodes = set()
     for subroot in good_subroots:
@@ -37,6 +37,7 @@ def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
 
 
 def remove_artifact_nodes_without_ast(graph: nx.DiGraph) -> nx.DiGraph:
+    raise NotImplementedError("This function is not implemented yet.")
     roots = [n for n, d in graph.in_degree() if d == 0]
 
     def is_bad_root(data):

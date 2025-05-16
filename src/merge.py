@@ -92,13 +92,17 @@ def main():
     parser.add_argument("--cfg", nargs="+", help="Paths to the CFG .dot files")
     parser.add_argument("--pdg", nargs="+", help="Paths to the PDG .dot files")
     parser.add_argument("--ref", help="Path to the reference .dot file")
-    parser.add_argument("--lang", choices=["python", "java", "cpp"], help="Language of the input files")
+    parser.add_argument("--lang", choices=["py", "java", "cpp"], help="Language of the input files")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
-    # parser.add_argument("-o", "--output", default="final.dot", help="Path to the output .dot file (default: final.dot)")
+    parser.add_argument(
+        "-o", "--output", default="merged.dot", help="Path to the output .dot file (default: merged.dot)"
+    )
 
     args = parser.parse_args()
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     input_graphs: list[nx.Graph] = read_dot_files(args.ast, args.cfg, args.pdg)
     refer_graph: nx.Graph = read_dot_file(args.ref)
@@ -109,16 +113,17 @@ def main():
     merged_graph = copy_node_data(merged_graph, refer_graph)
     merged_graph = add_call_edges(merged_graph, refer_graph)
 
-    # if args.lang == "python":
-    #     if args.ast is None:
-    #         merged_graph = langs.python.remove_artifact_nodes_without_ast(merged_graph)
-    #     else:
-    #         merged_graph = langs.python.remove_artifact_nodes_with_ast(merged_graph)
+    if args.lang == "py":
+        if args.ast is None:
+            merged_graph = langs.python.remove_artifact_nodes_without_ast(merged_graph)
+        else:
+            merged_graph = langs.python.remove_artifact_nodes_with_ast(merged_graph)
 
     merged_graph = color_node(merged_graph)
     merged_graph = color_edge(merged_graph)
     merged_graph = pretty_label(merged_graph)
-    write_dot_file(merged_graph, "out/merged.dot")
+    merged_graph.name = f"Merged {args.lang} Graph"
+    write_dot_file(merged_graph, f"out/{args.output}")
 
 
 if __name__ == "__main__":

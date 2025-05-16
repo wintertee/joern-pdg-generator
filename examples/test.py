@@ -9,13 +9,3 @@ class Helper:
         else:
             self.a = 0
             return False
-
-
-# def main():
-#     h = Helper()
-#     res = h.set(1)
-#     print("Result:", res)
-
-
-# if __name__ == "__main__":
-#     main()

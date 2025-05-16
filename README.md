@@ -20,11 +20,11 @@ filter 出来的整体更细致、精度更高、更符合底层逻辑；merge �
 
 ### Python
 
-对于Python类，会产生大量`<MetaClassAdapter>`, `<FakeNew>` 等和代码无关的方法。需要进行删除。尚无方法和实现。
+对于Python类，会产生大量`<MetaClassAdapter>`, `<FakeNew>` 等和代码无关的方法。需要进行删除。
 
 ### Java
 
-Java文件中，如果main函数所在类没有定义构造函数，则会生成一个 `<init>` 节点，需要手动删除。
+Java文件中，如果main函数所在类没有定义构造函数，则会生成一个 `<init>` 节点，需要手动删除。另外，导出AST时，会缺少`TYPE_DECL`类型节点，导致AST缺少父节点，需要手动添加。
 
 ### C++
 

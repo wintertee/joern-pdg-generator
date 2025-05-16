@@ -1,11 +1,11 @@
-class Helper {
+class Test {
     protected int a;
 
-    public Helper() {
+    public Test() {
         this.a = 100;
     }
 
-    public bool set(int a) {
+    public boolean set(int a) {
         if (a > 0) {
             this.a = a;
             return true;
@@ -15,13 +15,7 @@ class Helper {
             return false;
         }
     }
+
+    public static void main(String[] args) {
+    }
 }
-
-
-// public class Test {
-//     public static void main(String[] args) {
-//         Helper h = new Helper();
-//         res = h.set(1);
-//         System.out.println("Result: " + res);
-//     }
-// }
