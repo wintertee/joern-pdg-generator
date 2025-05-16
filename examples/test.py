@@ -11,11 +11,11 @@ class Helper:
             return False
 
 
-def main():
-    h = Helper()
-    res = h.set(1)
-    print("Result:", res)
+# def main():
+#     h = Helper()
+#     res = h.set(1)
+#     print("Result:", res)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

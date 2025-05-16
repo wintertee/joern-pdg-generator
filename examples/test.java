@@ -18,10 +18,10 @@ class Helper {
 }
 
 
-public class Test {
-    public static void main(String[] args) {
-        Helper h = new Helper();
-        res = h.set(1);
-        System.out.println("Result: " + res);
-    }
-}
+// public class Test {
+//     public static void main(String[] args) {
+//         Helper h = new Helper();
+//         res = h.set(1);
+//         System.out.println("Result: " + res);
+//     }
+// }

@@ -4,6 +4,8 @@ import networkx as nx
 
 logger = logging.getLogger(__name__)
 
+# The following functions do not work if class methods are not called!
+
 
 def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
     root = [n for n, d in graph.in_degree() if d == 0]
