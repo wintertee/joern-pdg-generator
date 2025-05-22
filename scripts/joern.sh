@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lang=java
+lang=cpp
 
 mkdir -p ./out/joern
 rm -r ./out/joern/*

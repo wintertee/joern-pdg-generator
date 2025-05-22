@@ -2,11 +2,14 @@ import argparse
 import logging
 from collections import defaultdict
 
+import colorlog
 import networkx as nx
 
+import langs.cpp
 import langs.python
-from utils import read_dot_file, write_dot_file
-from visualization import color_edge, color_node, pretty_label
+import predicates
+import utils
+import visualization
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +30,7 @@ def read_dot_files(ast_files, cfg_files, pdg_files) -> dict[str, list[nx.Graph]]
     for graph_type, files in zip(["ast", "cfg", "pdg"], [ast_files, cfg_files, pdg_files]):
         if files is not None:
             for file_path in files:
-                graph = read_dot_file(file_path)
+                graph = utils.read_dot_file(file_path)
                 input_graphs[graph_type].append(graph)
     return input_graphs
 
@@ -100,12 +103,32 @@ def main():
 
     args = parser.parse_args()
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        colorlog.basicConfig(
+            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
+            level=logging.DEBUG,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
     else:
-        logging.basicConfig(level=logging.INFO)
+        colorlog.basicConfig(
+            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
+            level=logging.INFO,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
 
     input_graphs: list[nx.Graph] = read_dot_files(args.ast, args.cfg, args.pdg)
-    refer_graph: nx.Graph = read_dot_file(args.ref)
+    refer_graph: nx.Graph = utils.read_dot_file(args.ref)
 
     input_graphs = add_edge_label(input_graphs)
 
@@ -118,12 +141,18 @@ def main():
             merged_graph = langs.python.remove_artifact_nodes_without_ast(merged_graph)
         else:
             merged_graph = langs.python.remove_artifact_nodes_with_ast(merged_graph)
+    elif args.lang == "cpp":
+        merged_graph = langs.cpp.remove_global_import(merged_graph)
 
-    merged_graph = color_node(merged_graph)
-    merged_graph = color_edge(merged_graph)
-    merged_graph = pretty_label(merged_graph)
+    utils.remove_edges_by_predicates(merged_graph, [predicates.null_ddg_edge])
+    utils.remove_nodes_by_predicates(merged_graph, [predicates.ast_leaves_node])
+
+    visualization.color_node(merged_graph)
+    visualization.color_edge(merged_graph)
+    visualization.pretty_label(merged_graph)
+
     merged_graph.name = f"Merged {args.lang} Graph"
-    write_dot_file(merged_graph, f"out/{args.output}")
+    utils.write_dot_file(merged_graph, f"out/{args.output}")
 
 
 if __name__ == "__main__":

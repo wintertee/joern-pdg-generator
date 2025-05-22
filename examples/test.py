@@ -9,3 +9,10 @@ class Helper:
         else:
             self.a = 0
             return False
+
+
+class Helper2(Helper):
+    pass
+
+
+print(Helper2().set(-1))

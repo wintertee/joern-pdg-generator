@@ -196,7 +196,6 @@ def pretty_label(graph):
         if "label" in data:
             data["original_label"] = data["label"]
             data["label"] = ASTNodeLabel.from_node_data(data)
-    return graph
 
 
 def color_node(graph):
@@ -206,7 +205,6 @@ def color_node(graph):
             graph.nodes[node]["color"] = CPG_COLORS[data["label"]]
         except KeyError:
             print(f"Error while coloring {node}, {data}")
-    return graph
 
 
 def color_edge(graph):
@@ -222,4 +220,3 @@ def color_edge(graph):
             graph.edges[u, v, k]["color"] = CPG_COLORS["CDG_EDGE"]
         elif "CALL" in data["label"]:
             graph.edges[u, v, k]["color"] = CPG_COLORS["CALL_EDGE"]
-    return graph

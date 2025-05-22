@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "colorlog>=6.9.0",
     "networkx>=3.4.2",
     "pygraphviz>=1.14",
+    "xdot>=1.4",
 ]

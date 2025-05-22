@@ -3,7 +3,8 @@ import argparse
 import networkx as nx
 
 from cpg import CPG, CPGTemplate
-from utils import pretty_graph, read_dot_file, write_dot_file
+from utils import read_dot_file, write_dot_file
+from visualization import pretty_graph
 
 node_filter: CPGTemplate = (
     CPGTemplate()
