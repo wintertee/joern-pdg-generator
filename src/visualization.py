@@ -1,5 +1,9 @@
 from collections import defaultdict
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 CPG_COLORS = {
     # 基本类：表示程序的基础结构，例如抽象语法树节点（AST_NODE）、代码块（BLOCK）等
     "AST_NODE": "dimgray",
@@ -68,7 +72,7 @@ class ASTNodeLabel:
     factories = defaultdict(
         lambda: (
             lambda cls, node_data: (
-                print(f"Warning: No factory found for label '{node_data['label']}'"),
+                logger.warning(f"No factory found for label '{node_data['label']}'"),
                 cls(node_type=node_data["label"]),
             )[1]
         )
@@ -122,11 +126,13 @@ class ASTNodeLabel:
     )
     factories["METHOD"] = lambda cls, data: cls(
         node_type="METHOD",
+        line_number=data.get("LINE_NUMBER"),
         value=data["FULL_NAME"],
         code=data.get("CODE"),
     )
     factories["METHOD_PARAMETER_IN"] = lambda cls, data: cls(
         node_type="METHOD_PARAMETER",
+        line_number=data.get("LINE_NUMBER"),
         code=data.get("CODE"),
     )
     factories["METHOD_REF"] = lambda cls, data: cls(
@@ -156,6 +162,7 @@ class ASTNodeLabel:
     factories["RETURN"] = lambda cls, data: cls(
         node_type="RETURN",
         line_number=data.get("LINE_NUMBER"),
+        value=data.get("ARGUMENT_NAME"),
         code=data.get("CODE"),
     )
     factories["TYPE"] = lambda cls, data: cls(
@@ -203,8 +210,8 @@ def color_node(graph):
     for node, data in graph.nodes(data=True):
         try:
             graph.nodes[node]["color"] = CPG_COLORS[data["label"]]
-        except KeyError:
-            print(f"Error while coloring {node}, {data}")
+        except KeyError as e:
+            logger.warning(f"Node {node} has no color for label {data['label']}. Error: {e}")
 
 
 def color_edge(graph):

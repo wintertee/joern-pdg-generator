@@ -85,7 +85,7 @@ def copy_node_data(merged_graph, ref_graph):
             ref_data = ref_graph.nodes[node]
             merged_graph.nodes[node].update(ref_data)
         else:
-            print(f"Node {node} not found in reference graph")
+            logger.warning(f"Node {node} not found in reference graph")
     return merged_graph
 
 
@@ -145,7 +145,7 @@ def main():
         merged_graph = langs.cpp.remove_global_import(merged_graph)
 
     utils.remove_edges_by_predicates(merged_graph, [predicates.null_ddg_edge])
-    utils.remove_nodes_by_predicates(merged_graph, [predicates.ast_leaves_node])
+    utils.remove_nodes_by_predicates(merged_graph, [predicates.ast_leaves_node, predicates.operator_method_body_node])
 
     visualization.color_node(merged_graph)
     visualization.color_edge(merged_graph)

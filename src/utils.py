@@ -60,7 +60,7 @@ def remove_nodes_from(graph, nodes):
 
         elif has_incoming_cfg != has_outgoing_cfg:
             # We are at the entry or exit of a CFG
-            logger.warning(
+            logger.debug(
                 f"Removing node {graph.nodes[node]} with only one CFG edge {incoming_edge if has_incoming_cfg else outgoning_edge}"
             )
 
@@ -69,7 +69,7 @@ def remove_nodes_from(graph, nodes):
             # We need to remove the node but maintain the CFG flow
             if incoming_edge and outgoning_edge:
                 graph.add_edge(incoming_edge[0], outgoning_edge[1], **incoming_edge[3])
-                logger.warning(
+                logger.debug(
                     f"Removing node {graph.nodes[node]} with both CFG edges {incoming_edge} and {outgoning_edge}"
                 )
 
