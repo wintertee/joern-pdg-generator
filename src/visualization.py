@@ -1,6 +1,8 @@
+import argparse
+import logging
 from collections import defaultdict
 
-import logging
+import utils
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +73,9 @@ class ASTNodeLabel:
 
     factories = defaultdict(
         lambda: (
-            lambda cls, node_data: (
-                logger.warning(f"No factory found for label '{node_data['label']}'"),
-                cls(node_type=node_data["label"]),
+            lambda cls, data: (
+                logger.warning(f"No factory found for label '{data['label']}'"),
+                cls(node_type=data["label"]),
             )[1]
         )
     )
@@ -181,7 +183,7 @@ class ASTNodeLabel:
         node_type="TYPE_REF",
         line_number=data.get("LINE_NUMBER"),
         value=data["TYPE_FULL_NAME"],
-        code=data.get("CODE"),
+        # code=data.get("CODE"),
     )
 
     def __repr__(self):
@@ -191,10 +193,9 @@ class ASTNodeLabel:
 
 
 def pretty_graph(graph):
-    graph = color_node(graph)
-    graph = color_edge(graph)
-    graph = pretty_label(graph)
-    return graph
+    color_node(graph)
+    color_edge(graph)
+    pretty_label(graph)
 
 
 def pretty_label(graph):
@@ -227,3 +228,18 @@ def color_edge(graph):
             graph.edges[u, v, k]["color"] = CPG_COLORS["CDG_EDGE"]
         elif "CALL" in data["label"]:
             graph.edges[u, v, k]["color"] = CPG_COLORS["CALL_EDGE"]
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Visualize CPG")
+    parser.add_argument("input", type=str, help="Input file path")
+    parser.add_argument("--output", type=str, default="./out/pretty.dot", help="Output file path")
+    args = parser.parse_args()
+
+    graph = utils.read_dot_file(args.input)
+    pretty_graph(graph)
+    utils.write_dot_file(graph, args.output)
+
+
+if __name__ == "__main__":
+    main()

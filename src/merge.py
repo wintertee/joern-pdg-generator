@@ -96,6 +96,7 @@ def main():
     parser.add_argument("--pdg", nargs="+", help="Paths to the PDG .dot files")
     parser.add_argument("--ref", help="Path to the reference .dot file")
     parser.add_argument("--lang", choices=["py", "java", "cpp"], help="Language of the input files")
+    parser.add_argument("--raw", action="store_true", help="disable pretty label and colorization")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
         "-o", "--output", default="merged.dot", help="Path to the output .dot file (default: merged.dot)"
@@ -127,7 +128,7 @@ def main():
             },
         )
 
-    input_graphs: list[nx.Graph] = read_dot_files(args.ast, args.cfg, args.pdg)
+    input_graphs = read_dot_files(args.ast, args.cfg, args.pdg)
     refer_graph: nx.Graph = utils.read_dot_file(args.ref)
 
     input_graphs = add_edge_label(input_graphs)
@@ -144,14 +145,28 @@ def main():
     elif args.lang == "cpp":
         merged_graph = langs.cpp.remove_global_import(merged_graph)
 
-    utils.remove_edges_by_predicates(merged_graph, [predicates.null_ddg_edge])
-    utils.remove_nodes_by_predicates(merged_graph, [predicates.ast_leaves_node, predicates.operator_method_body_node])
-
-    visualization.color_node(merged_graph)
-    visualization.color_edge(merged_graph)
-    visualization.pretty_label(merged_graph)
+    utils.remove_edges_by_predicates(
+        merged_graph,
+        [
+            predicates.null_ddg_edge,
+            predicates.cdg_edge,
+        ],
+    )
+    utils.remove_nodes_by_predicates(
+        merged_graph,
+        [
+            predicates.ast_leaves_node,
+            predicates.operator_method_body_node,
+            predicates.operator_fieldaccess_node,
+        ],
+    )
+    utils.remove_isolated_nodes(merged_graph)
+    utils.add_virtual_root(merged_graph)
 
     merged_graph.name = f"Merged {args.lang} Graph"
+
+    if not args.raw:
+        visualization.pretty_graph(merged_graph)
     utils.write_dot_file(merged_graph, f"out/{args.output}")
 
 

@@ -37,7 +37,7 @@ def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
 
 
 def remove_artifact_nodes_without_ast(graph: nx.DiGraph) -> nx.DiGraph:
-    raise NotImplementedError("This function is not implemented yet.")
+    return graph  # TODO: implement this function
     roots = [n for n, d in graph.in_degree() if d == 0]
 
     def is_bad_root(data):

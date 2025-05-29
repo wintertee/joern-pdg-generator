@@ -1,19 +1,29 @@
-class Helper {
+class Test
+{
 public:
     int a;
 
-    Helper() : a(100) {}
+    Test() : a(100) {}
 
-    bool set(int val) {
-        if (val > 0) {
-            this->a = val;
+    bool set(int val)
+    {
+        if (val > 0)
+        {
+            a = val;
             return true;
-        } else {
-            this->a = 0;
+        }
+        else
+        {
+            a = 0;
             return false;
         }
     }
 };
 
-void main() {
+int main(void)
+{
+    Test h;
+    int val = 10;
+    bool res = h.set(val);
+    return res ? 0 : 1;
 }

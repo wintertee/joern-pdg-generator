@@ -17,5 +17,9 @@ class Test {
     }
 
     public static void main(String[] args) {
+        Test h = new Test();
+        int val = 10;
+        boolean res = h.set(val);
+        System.exit(res ? 0 : 1);
     }
 }

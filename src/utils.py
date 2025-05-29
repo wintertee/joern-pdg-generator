@@ -2,13 +2,15 @@ import logging
 from typing import Any, Callable
 
 import networkx as nx
-from networkx.drawing.nx_agraph import read_dot, write_dot
+import networkx.drawing.nx_agraph
+
+import predicates
 
 logger = logging.getLogger(__name__)
 
 
 def read_dot_file(file_path):
-    graph = read_dot(file_path)
+    graph = networkx.drawing.nx_agraph.read_dot(file_path)
     logger.debug(f"Loaded {graph} from {file_path}")
     return graph
 
@@ -22,7 +24,7 @@ def write_dot_file(graph, output_file):
         output_file (str): Path to the output .dot file
     """
     logger.info(f"Writing {graph} to {output_file}")
-    write_dot(graph, output_file)
+    networkx.drawing.nx_agraph.write_dot(graph, output_file)
 
 
 def remove_edges_from(graph, edges):
@@ -68,6 +70,7 @@ def remove_nodes_from(graph, nodes):
             # We have both incoming and outgoing CFG edges
             # We need to remove the node but maintain the CFG flow
             if incoming_edge and outgoning_edge:
+                graph.remove_edges_from([incoming_edge,outgoning_edge])
                 graph.add_edge(incoming_edge[0], outgoning_edge[1], **incoming_edge[3])
                 logger.debug(
                     f"Removing node {graph.nodes[node]} with both CFG edges {incoming_edge} and {outgoning_edge}"
@@ -83,9 +86,6 @@ def remove_edges_by_predicates(graph, predicates: list[Callable[[tuple, dict, nx
     Args:
         graph (networkx.Graph): The graph to modify
         predicates (list): List of predicate functions to determine which edges to remove
-
-    Returns:
-        networkx.Graph: The modified graph
     """
     edges_to_remove = []
     for u, v, k, data in graph.edges(keys=True, data=True):
@@ -102,12 +102,28 @@ def remove_nodes_by_predicates(graph, predicates: list[Callable[[Any, dict, nx.G
     Args:
         graph (networkx.Graph): The graph to modify
         predicates (list): List of predicate functions to determine which nodes to remove
-
-    Returns:
-        networkx.Graph: The modified graph
     """
     nodes_to_remove = []
     for node, data in graph.nodes(data=True):
         if any(predicate(node, data, graph) for predicate in predicates):
             nodes_to_remove.append(node)
     remove_nodes_from(graph, nodes_to_remove)
+
+def remove_isolated_nodes(graph):
+    """
+    Remove isolated nodes from the graph.
+    """
+    isolated_nodes = list(nx.isolates(graph))
+    remove_nodes_from(graph, isolated_nodes)
+
+def add_virtual_root(graph):
+    """
+    Add a virtual root node connecting to all method nodes in the graph.
+    """
+    virtual_root = "VIRTUAL_ROOT"
+    if virtual_root not in graph:
+        graph.add_node(virtual_root, label="VIRTUAL_ROOT")
+        for node, data in graph.nodes(data=True):
+            if predicates.method_node(node, data, graph):
+                graph.add_edge(virtual_root, node, label="VIRTUAL_ROOT_EDGE")
+        logger.info(f"Added virtual root node {virtual_root} to the graph.")

@@ -1,4 +1,4 @@
-class Helper:
+class Test:
     def __init__(self):
         self.a = 100
 
@@ -11,8 +11,13 @@ class Helper:
             return False
 
 
-class Helper2(Helper):
-    pass
+def main():
+    h = Test()
+    val = 10
+    res = h.set(val)
+    import sys
+
+    sys.exit(0 if res else 1)
 
 
-print(Helper2().set(-1))
+main()

@@ -16,6 +16,21 @@ def null_ddg_edge(edge, data, graph) -> bool:
     return False
 
 
+def cdg_edge(edge, data, graph) -> bool:
+    if data["label"] == "CDG: ":
+        return True
+    return False
+
+
+def method_node(node, data, graph) -> bool:
+    """
+    We remove methods that are not explicitly defined in the code.
+    """
+    if data["label"] == "METHOD":
+        return True
+    return False
+
+
 def ast_leaves_node(node, data, graph) -> bool:
     """
     Some AST leafs are not useful for the analysis, we remove them
@@ -39,12 +54,11 @@ def operator_method_body_node(node, data, graph) -> bool:
     We remove methods not explicitly defined in the code.
     """
 
-
     def is_operator_root(data):
         return data["label"] == "METHOD" and "LINE_NUMBER" not in data.keys()
 
     if is_operator_root(data):
-        # return True
+        return True
         pass
 
     else:
@@ -54,4 +68,16 @@ def operator_method_body_node(node, data, graph) -> bool:
                 if is_operator_root(parent_data):
                     return True
 
+    return False
+
+
+def operator_fieldaccess_node(node, data, graph) -> bool:
+    """
+    We remove field access nodes that are not explicitly defined in the code.
+    """
+
+    if data["label"] == "CALL" and data.get("NAME") == "<operator>.fieldAccess":
+        return True
+    if data["label"] == "CALL" and data.get("NAME") == "<operator>.indirectFieldAccess":
+        return True
     return False
