@@ -9,8 +9,9 @@ def null_ddg_edge(edge, data, graph) -> bool:
     if data["label"] == "DDG: ":
         return True
 
-    # Incomping empty DDG edges to METHOD_RETURN
-    if graph.nodes[edge[1]]["label"] == "METHOD_RETURN" and "DDG" in data["label"]:
+    # Incoming empty DDG edges to METHOD_RETURN
+    # Keep return DDG <RET> and CFG edges.
+    if graph.nodes[edge[1]]["label"] == "METHOD_RETURN" and data["label"] not in ["DDG: &lt;RET&gt;", "CFG"]:
         return True
 
     return False

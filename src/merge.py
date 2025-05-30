@@ -99,7 +99,7 @@ def main():
     parser.add_argument("--raw", action="store_true", help="disable pretty label and colorization")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
-        "-o", "--output", default="merged.dot", help="Path to the output .dot file (default: merged.dot)"
+        "-o", "--output", default="./out/merged.dot", help="Path to the output .dot file (default: merged.dot)"
     )
 
     args = parser.parse_args()
@@ -155,19 +155,21 @@ def main():
     utils.remove_nodes_by_predicates(
         merged_graph,
         [
-            predicates.ast_leaves_node,
+            # predicates.ast_leaves_node,
             predicates.operator_method_body_node,
             predicates.operator_fieldaccess_node,
         ],
     )
     utils.remove_isolated_nodes(merged_graph)
-    utils.add_virtual_root(merged_graph)
+
+    if not args.ast:
+        utils.add_virtual_root(merged_graph)
 
     merged_graph.name = f"Merged {args.lang} Graph"
 
     if not args.raw:
         visualization.pretty_graph(merged_graph)
-    utils.write_dot_file(merged_graph, f"out/{args.output}")
+    utils.write_dot_file(merged_graph, f"{args.output}")
 
 
 if __name__ == "__main__":

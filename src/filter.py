@@ -6,16 +6,19 @@ from cpg import CPG, CPGTemplate
 from utils import read_dot_file, write_dot_file
 from visualization import pretty_graph
 
+import predicates
+import utils
+
 node_filter: CPGTemplate = (
     CPGTemplate()
     + CPG.METADATA
     + CPG.FILESYSTEM
     + CPG.NAMESPACE
     # + CPG.METHOD
-    + CPG.METHOD_PARAMETER_OUT
+    # + CPG.METHOD_PARAMETER_OUT
     # + CPG.TYPE
     # + CPG.AST
-    # + CPG.CALLGRAPH
+    + CPG.CALLGRAPH
     # + CPG.CFG
     + CPG.DOMINATORS
     # + CPG.PDG
@@ -36,10 +39,10 @@ edge_filter: CPGTemplate = (
     + CPG.FILESYSTEM
     + CPG.NAMESPACE
     # + CPG.METHOD
-    + CPG.METHOD_PARAMETER_OUT
+    # + CPG.METHOD_PARAMETER_OUT
     # + CPG.TYPE
-    # + CPG.AST
-    # + CPG.CALLGRAPH
+    + CPG.AST
+    + CPG.CALLGRAPH
     # + CPG.CFG
     + CPG.DOMINATORS
     # + CPG.PDG
@@ -71,48 +74,6 @@ def delete_nodes_and_edges(input_file, output_file, node_labels_to_delete, edge_
     graph.remove_edges_from(edges_to_remove)
     print(f"Removed {len(edges_to_remove)} edges")
 
-    # # Remove empty  REACHING_DEF
-    # edges_to_remove = []
-    # for u, v, k, data in graph.edges(keys=True, data=True):
-    #     if data.get("label", "") == "REACHING_DEF" and "property" not in data.keys():
-    #         edges_to_remove.append((u, v, k))
-    # graph.remove_edges_from(edges_to_remove)
-    # print(f"Removed {len(edges_to_remove)} REACHING_DEF edges without property")
-
-    # Remove operator nodes
-    # operator_method_nodes = [
-    #     node for node, data in graph.nodes(data=True) if "<operator>." in data.get("FULL_NAME", "")
-    # ]
-    # graph.remove_nodes_from(operator_method_nodes)
-    # print(f"Removed {len(operator_method_nodes)} operator nodes")
-    # [print(f"Removed operator node: {node}") for node in operator_method_nodes]
-
-    # Remove <init> for java
-    # init_method_nodes = [node for node, data in graph.nodes(data=True) if "<init>" in data.get("FULL_NAME", "")]
-    # graph.remove_nodes_from(init_method_nodes)
-    # print(f"Removed {len(init_method_nodes)} <init> nodes")
-    # keywords = [
-    #     # "METHOD<BR/>&lt;operator&gt;",
-    #     # "&lt;fakeNew&gt;",
-    #     # "&lt;metaClassAdapter&gt;",
-    #     "<init>",
-    # ]
-
-    # nodes_to_remove = set()
-
-    # for component in nx.weakly_connected_components(graph):
-    #     if any(any(keyword in graph.nodes[node].get("FULL_NAME", "") for keyword in keywords) for node in component):
-    #         # Collect all nodes in the connected component for removal
-    #         nodes_to_remove.update(component)
-
-    # # Remove all collected nodes after iteration
-    # graph.remove_nodes_from(nodes_to_remove)
-
-    # delete isolated nodes
-    isolated_nodes = list(nx.isolates(graph))
-    graph.remove_nodes_from(isolated_nodes)
-    print(f"Removed {len(isolated_nodes)} isolated nodes")
-
     for u, v, k, data in graph.edges(keys=True, data=True):
         if data.get("label") == "REACHING_DEF":
             data["label"] = f"DDG: {data.get('property', '')}"
@@ -120,8 +81,29 @@ def delete_nodes_and_edges(input_file, output_file, node_labels_to_delete, edge_
                 # Remove the property key from the data dictionary
                 del data["property"]
 
+    utils.remove_edges_by_predicates(
+        graph,
+        [
+            predicates.null_ddg_edge,
+            predicates.cdg_edge,
+        ],
+    )
+    utils.remove_nodes_by_predicates(
+        graph,
+        [
+            # predicates.ast_leaves_node,
+            predicates.operator_method_body_node,
+            predicates.operator_fieldaccess_node,
+        ],
+    )
+
+    # delete isolated nodes
+    isolated_nodes = list(nx.isolates(graph))
+    graph.remove_nodes_from(isolated_nodes)
+    print(f"Removed {len(isolated_nodes)} isolated nodes")
+
     # Render the graph as an SVG file
-    graph = pretty_graph(graph)
+    pretty_graph(graph)
     write_dot_file(graph, output_file)
 
 

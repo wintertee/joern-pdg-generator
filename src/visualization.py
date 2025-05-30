@@ -130,7 +130,8 @@ class ASTNodeLabel:
         node_type="METHOD",
         line_number=data.get("LINE_NUMBER"),
         value=data["FULL_NAME"],
-        code=data.get("CODE"),
+        # code=data.get("CODE"),
+        # ignore code, as only available for CPP
     )
     factories["METHOD_PARAMETER_IN"] = lambda cls, data: cls(
         node_type="METHOD_PARAMETER",

@@ -81,7 +81,7 @@ class CPG:
         node_labels=[],
         edge_labels=[
             "ARGUMENT",
-            "CALL",
+            # "CALL",
             "RECEIVER",
         ],
     )
