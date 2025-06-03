@@ -11,8 +11,26 @@ Code Property Graph（CPG）最早由 Yamaguchi 等人在 2014 年提出，将 A
 - 有限的指针支持（C/C++）
 - CallGraph中无法找到继承类的函数体
 - operator overload 无法识别
+- 错误的DFG
 
 此外，编程语言的不同也会造成生成的CDFG不同。
+
+### 错误的DFG
+
+Joern在处理四则运算时，除了加法外，DFG都会出现多余的边。这个问题至少在C/C++和Python上存在：
+
+```py
+c = i + j
+```
+
+```py
+c = i * j
+```
+
+上面两个Python代码生成的CDFG分别如下，注意代码左下角IDENTIFER节点i、j之间多了DDG边。
+
+![](assets/bug_operator_addition.svg)
+![](assets/bug_operator_multiplication.svg)
 
 ---
 
