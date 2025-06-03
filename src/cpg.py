@@ -98,7 +98,10 @@ class CPG:
 
     PDG = CPGTemplate(
         node_labels=[],
-        edge_labels=["CDG", "REACHING_DEF"],
+        edge_labels=[
+            "CDG",
+            # "REACHING_DEF", # Keep DDG
+        ],
     )
 
     COMMENT = CPGTemplate(

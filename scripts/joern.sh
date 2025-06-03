@@ -15,7 +15,12 @@ echo "Processing file: $filepath"
 mkdir -p ./out/joern
 rm -rf ./out/joern/*
 
-joern-parse "$filepath" > /dev/null 2>&1
+joern-parse "$filepath"
+
+if [ $? -ne 0 ]; then
+  echo "joern-parse failed"
+  exit 1
+fi
 
 for repr in all pdg cfg ast # ddg cdg pdg cpg14
 do

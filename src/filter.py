@@ -2,12 +2,11 @@ import argparse
 
 import networkx as nx
 
+import predicates
+import utils
 from cpg import CPG, CPGTemplate
 from utils import read_dot_file, write_dot_file
 from visualization import pretty_graph
-
-import predicates
-import utils
 
 node_filter: CPGTemplate = (
     CPGTemplate()
@@ -15,13 +14,13 @@ node_filter: CPGTemplate = (
     + CPG.FILESYSTEM
     + CPG.NAMESPACE
     # + CPG.METHOD
-    # + CPG.METHOD_PARAMETER_OUT
+    + CPG.METHOD_PARAMETER_OUT
     # + CPG.TYPE
     # + CPG.AST
     + CPG.CALLGRAPH
     # + CPG.CFG
     + CPG.DOMINATORS
-    # + CPG.PDG
+    + CPG.PDG
     + CPG.COMMENT
     + CPG.FINDING
     + CPG.SHORTCUTS
@@ -39,13 +38,13 @@ edge_filter: CPGTemplate = (
     + CPG.FILESYSTEM
     + CPG.NAMESPACE
     # + CPG.METHOD
-    # + CPG.METHOD_PARAMETER_OUT
+    + CPG.METHOD_PARAMETER_OUT
     # + CPG.TYPE
     + CPG.AST
     + CPG.CALLGRAPH
     # + CPG.CFG
     + CPG.DOMINATORS
-    # + CPG.PDG
+    + CPG.PDG
     + CPG.COMMENT
     + CPG.FINDING
     + CPG.SHORTCUTS
