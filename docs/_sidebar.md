@@ -7,7 +7,7 @@
   - [DFG](DFG.md)
 
 - [高等语言生成：Joern](Joern.md)
-  - [提取CDFG](Joern_CDFG.md)
+  - [使用Joern提取CDFG](Joern_CDFG.md)
 
 - [基于IR的生成：LLVM](LLVM.md)
 
