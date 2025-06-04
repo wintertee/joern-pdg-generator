@@ -14,5 +14,7 @@ pygobject==3.52.3
     # via xdot
 pygraphviz==1.14
     # via testjoern (pyproject.toml)
+tqdm==4.67.1
+    # via testjoern (pyproject.toml)
 xdot==1.4
     # via testjoern (pyproject.toml)

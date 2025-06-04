@@ -26,29 +26,37 @@ class CPG:
         node_labels=["META_DATA"],
         edge_labels=[],
     )
+
     FILESYSTEM = CPGTemplate(
         node_labels=["FILE"],
         edge_labels=["SOURCE_FILE"],
     )
+
     NAMESPACE = CPGTemplate(
         node_labels=["NAMESPACE", "NAMESPACE_BLOCK"],
         edge_labels=[],
     )
-    METHOD = CPGTemplate(
+
+    # use underscore to mark this layer is not complete (see below)
+    METHOD_ = CPGTemplate(
         node_labels=[
-            "METHOD",  # We keep this node for CALL edge in CALLGRAPH
-            "METHOD_PARAMETER_IN",
-            "METHOD_PARAMETER_OUT",
+            "METHOD",
+            # "METHOD_PARAMETER_IN",
+            # "METHOD_PARAMETER_OUT",
             "METHOD_RETURN",
         ],
         edge_labels=[],
     )
-    METHOD_PARAMETER_OUT = CPGTemplate(
+
+    METHOD_PARAMETER_ = CPGTemplate(
         node_labels=[
             "METHOD_PARAMETER_OUT",
+            # Since every METHOD_PARAMETER_IN are connected to their METHOD_PARAMETER_OUT, this is redundancy..
+            # https://github.com/joernio/joern/blob/f6f3f2627cd909507f7917c5bdb1db0d771b124e/joern-cli/frontends/x2cpg/src/main/scala/io/joern/x2cpg/passes/base/MethodDecoratorPass.scala#L9
         ],
         edge_labels=[],
     )
+
     TYPE = CPGTemplate(
         node_labels=["MEMBER", "TYPE", "TYPE_PARAMETER", "TYPE_DECL", "TYPE_ARGUMENT"],
         edge_labels=["ALIAS_OF", "BINDS_TO", "INHERITS_FROM"],
@@ -73,15 +81,26 @@ class CPG:
             "RETURN",
             "TYPE_REF",
             "UNKNOWN",
+            "METHOD_PARAMETER_IN",
+            # We move it from METHOD layer, as it is always connected to METHOD node with AST edge.
+            # i.e. if we remove AST edges, this node will not have parents.
         ],
         edge_labels=["AST", "CONDITION"],
     )
 
-    CALLGRAPH = CPGTemplate(
+    CALLGRAPH_CALL_ = CPGTemplate(
+        node_labels=[],
+        edge_labels=[
+            # "ARGUMENT",
+            "CALL",
+            # "RECEIVER",
+        ],
+    )
+
+    CALLGRAPH_AST_ = CPGTemplate(
         node_labels=[],
         edge_labels=[
             "ARGUMENT",
-            # "CALL",
             "RECEIVER",
         ],
     )
@@ -96,11 +115,18 @@ class CPG:
         edge_labels=["DOMINATE", "POST_DOMINATE"],
     )
 
-    PDG = CPGTemplate(
+    PDG_CDG_ = CPGTemplate(
         node_labels=[],
         edge_labels=[
             "CDG",
-            # "REACHING_DEF", # Keep DDG
+            # "REACHING_DEF",
+        ],
+    )
+
+    PDG_DDG_ = CPGTemplate(
+        node_labels=[],
+        edge_labels=[
+            "REACHING_DEF",
         ],
     )
 

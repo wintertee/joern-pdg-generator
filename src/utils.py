@@ -1,10 +1,7 @@
 import logging
-from typing import Any, Callable
 
-import networkx as nx
+import colorlog
 import networkx.drawing.nx_agraph
-
-import predicates
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +67,7 @@ def remove_nodes_from(graph, nodes):
             # We have both incoming and outgoing CFG edges
             # We need to remove the node but maintain the CFG flow
             if incoming_edge and outgoning_edge:
-                graph.remove_edges_from([incoming_edge,outgoning_edge])
+                graph.remove_edges_from([incoming_edge, outgoning_edge])
                 graph.add_edge(incoming_edge[0], outgoning_edge[1], **incoming_edge[3])
                 logger.debug(
                     f"Removing node {graph.nodes[node]} with both CFG edges {incoming_edge} and {outgoning_edge}"
@@ -78,43 +75,6 @@ def remove_nodes_from(graph, nodes):
 
     graph.remove_nodes_from(nodes)
 
-
-def remove_edges_by_predicates(graph, predicates: list[Callable[[tuple, dict, nx.Graph], bool]]):
-    """
-    Remove edges from the graph based on the provided predicate functions.
-
-    Args:
-        graph (networkx.Graph): The graph to modify
-        predicates (list): List of predicate functions to determine which edges to remove
-    """
-    edges_to_remove = []
-    for u, v, k, data in graph.edges(keys=True, data=True):
-        edge = (u, v, k)
-        if any(predicate(edge, data, graph) for predicate in predicates):
-            edges_to_remove.append(edge)
-    remove_edges_from(graph, edges_to_remove)
-
-
-def remove_nodes_by_predicates(graph, predicates: list[Callable[[Any, dict, nx.Graph], bool]]):
-    """
-    Remove nodes from the graph based on the provided predicate functions.
-
-    Args:
-        graph (networkx.Graph): The graph to modify
-        predicates (list): List of predicate functions to determine which nodes to remove
-    """
-    nodes_to_remove = []
-    for node, data in graph.nodes(data=True):
-        if any(predicate(node, data, graph) for predicate in predicates):
-            nodes_to_remove.append(node)
-    remove_nodes_from(graph, nodes_to_remove)
-
-def remove_isolated_nodes(graph):
-    """
-    Remove isolated nodes from the graph.
-    """
-    isolated_nodes = list(nx.isolates(graph))
-    remove_nodes_from(graph, isolated_nodes)
 
 def add_virtual_root(graph):
     """
@@ -124,6 +84,47 @@ def add_virtual_root(graph):
     if virtual_root not in graph:
         graph.add_node(virtual_root, label="VIRTUAL_ROOT")
         for node, data in graph.nodes(data=True):
-            if predicates.method_node(node, data, graph):
+            if data["label"] == "METHOD":
                 graph.add_edge(virtual_root, node, label="VIRTUAL_ROOT_EDGE")
         logger.info(f"Added virtual root node {virtual_root} to the graph.")
+
+
+def setup_logging(verbose=False):
+    """
+    Set up logging configuration.
+    """
+    if verbose:
+        colorlog.basicConfig(
+            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
+            level=logging.DEBUG,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
+    else:
+        colorlog.basicConfig(
+            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
+            level=logging.INFO,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
+
+
+def replace_ddg_label(graph):
+    """
+    Replace the label of DDG edges to include the property if it exists.
+    """
+    for u, v, k, data in graph.edges(keys=True, data=True):
+        if data.get("label") == "REACHING_DEF":
+            data["label"] = f"DDG: {data.get('property', '')}"
+            if "property" in data:
+                del data["property"]

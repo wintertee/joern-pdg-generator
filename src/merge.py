@@ -2,12 +2,11 @@ import argparse
 import logging
 from collections import defaultdict
 
-import colorlog
 import networkx as nx
 
-import langs.cpp
-import langs.python
-import predicates
+import pruner
+import pruner.langs
+import pruner.predicates
 import utils
 import visualization
 
@@ -103,30 +102,7 @@ def main():
     )
 
     args = parser.parse_args()
-    if args.verbose:
-        colorlog.basicConfig(
-            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
-            level=logging.DEBUG,
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
-        )
-    else:
-        colorlog.basicConfig(
-            format="%(log_color)s %(levelname)-8s [%(filename)s:%(lineno)s ->%(funcName)s()] %(message)s",
-            level=logging.INFO,
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
-        )
+    utils.setup_logging(args.verbose)
 
     input_graphs = read_dot_files(args.ast, args.cfg, args.pdg)
     refer_graph: nx.Graph = utils.read_dot_file(args.ref)
@@ -137,30 +113,25 @@ def main():
     merged_graph = copy_node_data(merged_graph, refer_graph)
     merged_graph = add_call_edges(merged_graph, refer_graph)
 
+    graph_pruner = pruner.GraphPruner(merged_graph)
+    
     if args.lang == "py":
-        if args.ast is None:
-            merged_graph = langs.python.remove_artifact_nodes_without_ast(merged_graph)
+        if  args.ast is None:
+            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_without_ast)
         else:
-            merged_graph = langs.python.remove_artifact_nodes_with_ast(merged_graph)
+            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_with_ast)
     elif args.lang == "cpp":
-        merged_graph = langs.cpp.remove_global_import(merged_graph)
+        graph_pruner.add_prune_function(pruner.langs.cpp.remove_global_import)
 
-    utils.remove_edges_by_predicates(
-        merged_graph,
-        [
-            predicates.null_ddg_edge,
-            predicates.cdg_edge,
-        ],
-    )
-    utils.remove_nodes_by_predicates(
-        merged_graph,
-        [
-            # predicates.ast_leaves_node,
-            predicates.operator_method_body_node,
-            predicates.operator_fieldaccess_node,
-        ],
-    )
-    utils.remove_isolated_nodes(merged_graph)
+    graph_pruner.add_edge_predicate(pruner.predicates.edges.null_ddg)
+    graph_pruner.add_edge_predicate(pruner.predicates.edges.cdg)
+
+    # graph_pruner.add_node_predicate(pruner.predicates.nodes.ast_leaves)
+    graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_method_body)
+    graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_fieldaccess)
+
+    graph_pruner.prune()
+    graph_pruner.remove_isolated_nodes()
 
     if not args.ast:
         utils.add_virtual_root(merged_graph)

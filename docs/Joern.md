@@ -12,6 +12,8 @@ Code Property Graph（CPG）最早由 Yamaguchi 等人在 2014 年提出，将 A
 - CallGraph中无法找到继承类的函数体
 - operator overload 无法识别
 - 错误的DFG
+- 函数调用时，缺少`caller->callee`的argument的data flow，以及`callee->caller`的return的data flow [参考](https://groups.seas.harvard.edu/courses/cs252/2011sp/slides/Lec05-Interprocedural.pdf)
+- 无法提供分支条件
 
 此外，编程语言的不同也会造成生成的CDFG不同。
 
@@ -31,6 +33,16 @@ c = i * j
 
 ![](assets/bug_operator_addition.svg)
 ![](assets/bug_operator_multiplication.svg)
+
+### 无法提供分支条件
+
+Joern的AST节点`CONTROL_STRUCTURE`可以标注分支类别，如`if`, `while`，但在分支节点上有多个 control flow 时，Joern不提供 control flow的条件。
+
+例如对于代码 `if (x>0) x=1; else x=2;`, 会生成`call.greaterthan[x>0]`节点，分别通过control flow edge连接`call.assignment[x=1]`和`call.assignment[x=2]`，但是在什么情况下经过哪一条边没有说明。（这是最简单的情况，可以根据两个节点对应的代码位置推断出True/False）
+
+对于`switch`语句，Joern不提供条件节点，如下图所示。
+
+![](assets/switch_ast.svg)
 
 ---
 

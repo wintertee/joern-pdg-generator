@@ -22,7 +22,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-for repr in all pdg cfg ast # ddg cdg pdg cpg14
+for repr in all pdg cfg ast cpg14 # ddg cdg pdg 
 do
     joern-export --repr="$repr" --out "./out/joern/$repr"
 done
@@ -43,3 +43,9 @@ python src/merge.py \
     -o "./out/ast_cdfg.dot"
 
 python src/filter.py ./out/joern/all/export.dot
+
+python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$lang"
+
+python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$lang" --ast -o ./out/ast_v2.dot
+
+# python src/visualization.py ./out/joern/all/export.dot

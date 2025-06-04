@@ -16,12 +16,8 @@ for file in $path/*/*.$lang; do
         joern-export --repr=$repr --out ./out/joern/$repr
     done
     
-    python src/merge.py \
-        --cfg ./out/joern/cfg/* \
-        --pdg ./out/joern/pdg/* \
-        --ref ./out/joern/all/export.dot \
-        --lang $lang \
-        -o "${file%.*}.dot"
-        # --raw 
+    python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$lang"
+
+    python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$lang" --ast -o ./out/ast_v2.dot
     
 done

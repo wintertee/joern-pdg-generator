@@ -109,6 +109,12 @@ class ASTNodeLabel:
         value=data["NAME"],
         code=data.get("CODE"),
     )
+    factories["JUMP_TARGET"] = lambda cls, data: cls(
+        node_type="JUMP_TARGET",
+        line_number=data.get("LINE_NUMBER"),
+        value=data["NAME"],
+        code=data.get("CODE"),
+    )
     factories["LITERAL"] = lambda cls, data: cls(
         node_type="LITERAL",
         line_number=data.get("LINE_NUMBER"),
@@ -134,7 +140,12 @@ class ASTNodeLabel:
         # ignore code, as only available for CPP
     )
     factories["METHOD_PARAMETER_IN"] = lambda cls, data: cls(
-        node_type="METHOD_PARAMETER",
+        node_type="METHOD_PARAMETER_IN",
+        line_number=data.get("LINE_NUMBER"),
+        code=data.get("CODE"),
+    )
+    factories["METHOD_PARAMETER_OUT"] = lambda cls, data: cls(
+        node_type="METHOD_PARAMETER_OUT",
         line_number=data.get("LINE_NUMBER"),
         code=data.get("CODE"),
     )
@@ -221,7 +232,7 @@ def color_edge(graph):
     for u, v, k, data in graph.edges(keys=True, data=True):
         if data["label"] == "AST":
             graph.edges[u, v, k]["color"] = CPG_COLORS["AST_EDGE"]
-        elif data["label"] == "CFG":
+        elif "CFG" in data["label"]:
             graph.edges[u, v, k]["color"] = CPG_COLORS["CFG_EDGE"]
         elif "DDG" in data["label"] or "REACHING_DEF" in data["label"]:
             graph.edges[u, v, k]["color"] = CPG_COLORS["DDG_EDGE"]
@@ -235,7 +246,10 @@ def main():
     parser = argparse.ArgumentParser(description="Visualize CPG")
     parser.add_argument("input", type=str, help="Input file path")
     parser.add_argument("--output", type=str, default="./out/pretty.dot", help="Output file path")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
+
+    utils.setup_logging(args.verbose)
 
     graph = utils.read_dot_file(args.input)
     pretty_graph(graph)

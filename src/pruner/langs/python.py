@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 # The following functions do not work if class methods are not called!
 
 
-def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
+def remove_artifact_nodes_with_ast(graph: nx.MultiDiGraph):
     root = [n for n, d in graph.in_degree() if d == 0]
     assert len(root) == 1, "There should be only one root node"
     root = root[0]
@@ -33,11 +33,11 @@ def remove_artifact_nodes_with_ast(graph: nx.DiGraph) -> nx.DiGraph:
             # graph.nodes[node]["color"] = "blue"
             graph.remove_node(node)
 
-    return graph
 
 
-def remove_artifact_nodes_without_ast(graph: nx.DiGraph) -> nx.DiGraph:
-    return graph  # TODO: implement this function
+def remove_artifact_nodes_without_ast(graph: nx.MultiDiGraph):
+    logger.warning("Removing artifact nodes without AST is not implemented yet.")
+    return  # TODO: implement this function
     roots = [n for n, d in graph.in_degree() if d == 0]
 
     def is_bad_root(data):
@@ -60,5 +60,3 @@ def remove_artifact_nodes_without_ast(graph: nx.DiGraph) -> nx.DiGraph:
         if node not in good_nodes:
             # graph.nodes[node]["color"] = "blue"
             graph.remove_node(node)
-
-    return graph
