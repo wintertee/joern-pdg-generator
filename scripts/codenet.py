@@ -39,19 +39,22 @@ def process_file(args):
         current_file_joern_root = os.path.join(per_file_base_dir, "joern")
         os.makedirs(current_file_joern_root, exist_ok=True)
 
-        # 2. 运行 joern-parse。
-        joern_parse_cmd = ["joern-parse", abs_file_path]
+        # 2. 运行 c2cpg.sh（Joern前端）。
+        c2cpg_path = "c2cpg.sh"
+        c2cpg_mem = args.c2cpg_mem
+        cpg_output = os.path.join(current_file_joern_root, "cpg.bin")
+        c2cpg_cmd = [c2cpg_path, c2cpg_mem, abs_file_path, "--output", cpg_output]
         parse_result = subprocess.run(
-            joern_parse_cmd,
+            c2cpg_cmd,
             cwd=current_file_joern_root,
-            stdout=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             check=False,
         )
         if parse_result.returncode != 0:
             raise subprocess.CalledProcessError(
-                returncode=parse_result.returncode, cmd=joern_parse_cmd, stderr=parse_result.stderr
+                returncode=parse_result.returncode, cmd=c2cpg_cmd, stderr=parse_result.stderr
             )
 
         # 3. 运行 joern-export 以获取 'all' 和 'cfg' 表示。
@@ -156,6 +159,7 @@ def main():
     parser.add_argument(
         "--num_workers", type=int, default=multiprocessing.cpu_count(), help="并行进程数，默认等于CPU核心数"
     )
+    parser.add_argument("--c2cpg_mem", type=str, default="-J-Xmx1024m", help="c2cpg.sh 最大内存参数，默认'-J-Xmx1024m'")
     args = parser.parse_args()
 
     print("--------------------------------------------------------------------------")
