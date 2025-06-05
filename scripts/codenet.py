@@ -52,8 +52,14 @@ def process_file(args):
             check=False,
         )
         if parse_result.returncode != 0:
+            print(f"\n[ERROR] c2cpg.sh 执行失败: {' '.join(c2cpg_cmd)}")
+            print(f"[STDOUT]:\n{parse_result.stdout}")
+            print(f"[STDERR]:\n{parse_result.stderr}")
             raise subprocess.CalledProcessError(
-                returncode=parse_result.returncode, cmd=c2cpg_cmd, stderr=parse_result.stderr
+                returncode=parse_result.returncode,
+                cmd=c2cpg_cmd,
+                stderr=parse_result.stderr,
+                output=parse_result.stdout,
             )
 
         # 3. 运行 joern-export 以获取 'all' 和 'cfg' 表示。
@@ -65,14 +71,20 @@ def process_file(args):
             export_result = subprocess.run(
                 joern_export_cmd,
                 cwd=current_file_joern_root,
-                stdout=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=False,
             )
             if export_result.returncode != 0:
+                print(f"\n[ERROR] joern-export 执行失败: {' '.join(joern_export_cmd)}")
+                print(f"[STDOUT]:\n{export_result.stdout}")
+                print(f"[STDERR]:\n{export_result.stderr}")
                 raise subprocess.CalledProcessError(
-                    returncode=export_result.returncode, cmd=joern_export_cmd, stderr=export_result.stderr
+                    returncode=export_result.returncode,
+                    cmd=joern_export_cmd,
+                    stderr=export_result.stderr,
+                    output=export_result.stdout,
                 )
 
         # 4. 准备 v2.py 脚本的路径和参数。
