@@ -219,12 +219,22 @@ def main():
                     results_log.append(result_tuple)
                     if result_tuple[1]:
                         success_count += 1
-                        # 不再在此处写入数据库，统一在 finally 阶段写入
                     else:
                         error_count += 1
                     pbar.set_postfix({"成功": success_count, "失败": error_count})
                     pbar.update(1)
 
+                    # Panic exit if error rate > 50% and processed > 10
+                    total_processed = success_count + error_count
+                    if total_processed > 10 and error_count / total_processed > 0.5:
+                        print(
+                            "\n🛑 Panic exit: 错误率超过50%，已处理文件数：{}，失败数：{}".format(
+                                total_processed, error_count
+                            )
+                        )
+                        pool.terminate()
+                        pool.join()
+                        raise SystemExit("Panic exit due to high error rate.")
     except KeyboardInterrupt:
         print("\n🚫 用户通过 (Ctrl+C) 中断了进程。工作进程正在终止。")
         print("   将显示已完成工作的摘要。")
