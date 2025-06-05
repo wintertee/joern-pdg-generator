@@ -1,10 +1,10 @@
-import os
+import argparse
 import glob
+import multiprocessing
+import os
 import shutil  # 尽管在此版本中不直接用于 rmtree，但保留它对文件操作有益
 import subprocess
-import multiprocessing
 from tqdm import tqdm
-import sys  # 用于在需要时退出，尽管默认情况下不用于立即退出
 
 # --- 配置 ---
 # 要处理的语言
@@ -152,6 +152,12 @@ def main():
     主函数，用于发现文件并并行处理它们。
     处理 KeyboardInterrupt 以实现优雅关闭。
     """
+    parser = argparse.ArgumentParser(description="使用 Joern 和 v2.py 并行处理源文件")
+    parser.add_argument(
+        "--num_workers", type=int, default=multiprocessing.cpu_count(), help="并行进程数，默认等于CPU核心数"
+    )
+    args = parser.parse_args()
+
     print("--------------------------------------------------------------------------")
     print("🐍 使用 Joern 和 v2.py 处理源文件的 Python 脚本")
     print("   (输出到每个文件的 '<文件名>/joern/' 子目录)")
@@ -194,8 +200,7 @@ def main():
     print("ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
 
     tasks_args = [(fp, LANG) for fp in files_to_process]
-    cpu_cores = multiprocessing.cpu_count()
-    num_workers = cpu_cores
+    num_workers = args.num_workers
     # num_workers = max(1, min(cpu_cores // 2, 16))
     # num_workers = 1 # 用于调试
 
