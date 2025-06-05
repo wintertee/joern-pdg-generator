@@ -1,10 +1,10 @@
 import os
 import glob
-import shutil # 尽管在此版本中不直接用于 rmtree，但保留它对文件操作有益
+import shutil  # 尽管在此版本中不直接用于 rmtree，但保留它对文件操作有益
 import subprocess
 import multiprocessing
 from tqdm import tqdm
-import sys # 用于在需要时退出，尽管默认情况下不用于立即退出
+import sys  # 用于在需要时退出，尽管默认情况下不用于立即退出
 
 # --- 配置 ---
 # 要处理的语言
@@ -18,6 +18,7 @@ FILE_GLOB_PATTERN = os.path.join(BASE_DATA_PATH, "*", f"*.{LANG}")
 V2_PY_SCRIPT = os.path.abspath("./src/v2.py")
 # --- 配置结束 ---
 
+
 def process_file(args):
     """
     使用 Joern 和 v2.py 脚本处理单个源代码文件。
@@ -28,7 +29,7 @@ def process_file(args):
     """
     file_path, lang_param = args
     abs_file_path = os.path.abspath(file_path)
-    current_file_joern_root = "" # 为清晰起见，在早期错误发生时初始化
+    current_file_joern_root = ""  # 为清晰起见，在早期错误发生时初始化
 
     try:
         # 1. 确定并为此文件创建唯一的输出目录。
@@ -41,30 +42,35 @@ def process_file(args):
         # 2. 运行 joern-parse。
         joern_parse_cmd = ["joern-parse", abs_file_path]
         parse_result = subprocess.run(
-            joern_parse_cmd, cwd=current_file_joern_root,
-            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-            text=True, check=False
+            joern_parse_cmd,
+            cwd=current_file_joern_root,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
         )
         if parse_result.returncode != 0:
             raise subprocess.CalledProcessError(
-                returncode=parse_result.returncode, cmd=joern_parse_cmd,
-                stderr=parse_result.stderr
+                returncode=parse_result.returncode, cmd=joern_parse_cmd, stderr=parse_result.stderr
             )
 
         # 3. 运行 joern-export 以获取 'all' 和 'cfg' 表示。
         for representation in ["all", "cfg"]:
             export_target_dir = os.path.join(current_file_joern_root, representation)
-            os.makedirs(export_target_dir, exist_ok=True)
+            if os.path.exists(export_target_dir):
+                shutil.rmtree(export_target_dir)
             joern_export_cmd = ["joern-export", f"--repr={representation}", "--out", export_target_dir]
             export_result = subprocess.run(
-                joern_export_cmd, cwd=current_file_joern_root,
-                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                text=True, check=False
+                joern_export_cmd,
+                cwd=current_file_joern_root,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
             )
             if export_result.returncode != 0:
                 raise subprocess.CalledProcessError(
-                    returncode=export_result.returncode, cmd=joern_export_cmd,
-                    stderr=export_result.stderr
+                    returncode=export_result.returncode, cmd=joern_export_cmd, stderr=export_result.stderr
                 )
 
         # 4. 准备 v2.py 脚本的路径和参数。
@@ -81,22 +87,28 @@ def process_file(args):
 
         cfg_data_dir = os.path.join(current_file_joern_root, "cfg")
         if not os.path.isdir(cfg_data_dir):
-             os.makedirs(cfg_data_dir, exist_ok=True)
+            os.makedirs(cfg_data_dir, exist_ok=True)
         cfg_input_items_for_v2py = glob.glob(os.path.join(cfg_data_dir, "*"))
 
         # 5. 运行第一个 v2.py 命令。
         v2_cmd1_list = ["python", V2_PY_SCRIPT, all_export_dot_file, "--cfg"]
         v2_cmd1_list.extend(cfg_input_items_for_v2py)
         v2_cmd1_list.extend(["--lang", lang_param])
+        v2_cmd1_list.extend(["-o", os.path.join(current_file_joern_root, "v2.dot")])
         v2_py_result1 = subprocess.run(
-            v2_cmd1_list, cwd=current_file_joern_root,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, check=False
+            v2_cmd1_list,
+            cwd=current_file_joern_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
         )
         if v2_py_result1.returncode != 0:
             raise subprocess.CalledProcessError(
-                returncode=v2_py_result1.returncode, cmd=v2_cmd1_list,
-                output=v2_py_result1.stdout, stderr=v2_py_result1.stderr
+                returncode=v2_py_result1.returncode,
+                cmd=v2_cmd1_list,
+                output=v2_py_result1.stdout,
+                stderr=v2_py_result1.stderr,
             )
 
         # 6. 运行第二个 v2.py 命令
@@ -105,21 +117,26 @@ def process_file(args):
         v2_cmd2_list.extend(cfg_input_items_for_v2py)
         v2_cmd2_list.extend(["--lang", lang_param, "--ast", "-o", ast_output_target_file])
         v2_py_result2 = subprocess.run(
-            v2_cmd2_list, cwd=current_file_joern_root,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, check=False
+            v2_cmd2_list,
+            cwd=current_file_joern_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
         )
         if v2_py_result2.returncode != 0:
             raise subprocess.CalledProcessError(
-                returncode=v2_py_result2.returncode, cmd=v2_cmd2_list,
-                output=v2_py_result2.stdout, stderr=v2_py_result2.stderr
+                returncode=v2_py_result2.returncode,
+                cmd=v2_cmd2_list,
+                output=v2_py_result2.stdout,
+                stderr=v2_py_result2.stderr,
             )
 
         return (file_path, True, f"输出位于 {current_file_joern_root}")
 
     except subprocess.CalledProcessError as e:
         error_details = f"命令 '{' '.join(e.cmd)}' 执行失败，退出代码 {e.returncode}。"
-        if hasattr(e, 'output') and e.output and e.output.strip():
+        if hasattr(e, "output") and e.output and e.output.strip():
             error_details += f"\n标准输出:\n{e.output.strip()}"
         if e.stderr and e.stderr.strip():
             error_details += f"\n标准错误:\n{e.stderr.strip()}"
@@ -128,6 +145,7 @@ def process_file(args):
         return (file_path, False, f"未找到所需的文件或目录 - {e}")
     except Exception as e:
         return (file_path, False, f"发生意外错误 - {type(e).__name__}: {e}")
+
 
 def main():
     """
@@ -148,7 +166,7 @@ def main():
     if not os.path.exists(V2_PY_SCRIPT):
         print(f"🔴 严重错误: 未找到分析脚本 {V2_PY_SCRIPT}。正在退出。")
         return
-        
+
     if not os.path.isdir(BASE_DATA_PATH):
         print(f"🔴 严重错误: 基础数据路径 {os.path.abspath(BASE_DATA_PATH)} 不存在或不是目录。正在退出。")
         return
@@ -157,33 +175,47 @@ def main():
     # 按文件名排序文件列表
     files_to_process = sorted(glob.glob(FILE_GLOB_PATTERN))
 
+    # 断点续跑数据库文件
+    PROCESSED_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processed_files.txt")
+    processed_files_set = set()
+    if os.path.exists(PROCESSED_DB_PATH):
+        with open(PROCESSED_DB_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                processed_files_set.add(line.strip())
+
+    # 过滤掉已处理的文件
+    files_to_process = [fp for fp in files_to_process if os.path.abspath(fp) not in processed_files_set]
 
     if not files_to_process:
-        print(f"🔴 未找到与模式匹配的文件。请检查:")
-        print(f"   - 基础数据路径: {os.path.abspath(BASE_DATA_PATH)}")
-        print(f"   - 文件 glob 模式 (已扩展): {os.path.abspath(FILE_GLOB_PATTERN)}")
+        print("所有文件均已处理，无需重复处理。")
         return
 
-    print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序)。")
-    print(f"ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
+    print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序，已跳过已处理文件)。")
+    print("ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
 
     tasks_args = [(fp, LANG) for fp in files_to_process]
     cpu_cores = multiprocessing.cpu_count()
-    num_workers = max(1, min(cpu_cores // 2, 16))
+    num_workers = cpu_cores
+    # num_workers = max(1, min(cpu_cores // 2, 16))
     # num_workers = 1 # 用于调试
-    
-    results_log = [] # 存储 (file_path, success_bool, message_str) 元组
+
+    results_log = []  # 存储 (file_path, success_bool, message_str) 元组
+    success_count = 0
+    error_count = 0
     print(f"⚙️  正在使用 {num_workers} 个工作进程初始化并行处理...")
-    
+
     try:
         with multiprocessing.Pool(processes=num_workers) as pool:
-            for result_tuple in tqdm(
-                pool.imap_unordered(process_file, tasks_args),
-                total=len(tasks_args),
-                desc="🚀 处理文件",
-                smoothing=0
-            ):
-                results_log.append(result_tuple)
+            with tqdm(total=len(tasks_args), desc="🚀 处理文件", smoothing=0) as pbar:
+                for result_tuple in pool.imap_unordered(process_file, tasks_args):
+                    results_log.append(result_tuple)
+                    if result_tuple[1]:
+                        success_count += 1
+                        # 不再在此处写入数据库，统一在 finally 阶段写入
+                    else:
+                        error_count += 1
+                    pbar.set_postfix({"成功": success_count, "失败": error_count})
+                    pbar.update(1)
 
     except KeyboardInterrupt:
         print("\n🚫 用户通过 (Ctrl+C) 中断了进程。工作进程正在终止。")
@@ -192,16 +224,23 @@ def main():
         print(f"\n❌ 并行处理期间发生意外错误: {type(e).__name__} - {e}")
         print("   工作进程正在终止。将显示已完成工作的摘要。")
     finally:
+        # 统一写入本轮新成功的文件到 processed_files.txt
+        new_success_files = [os.path.abspath(fp) for fp, success, _ in results_log if success]
+        if new_success_files:
+            with open(PROCESSED_DB_PATH, "a", encoding="utf-8") as f:
+                for fp in new_success_files:
+                    f.write(fp + "\n")
+
         print("\n--- 📊 处理摘要 ---")
-        
+
         # 根据原始文件名对结果进行排序
         results_log.sort(key=lambda item: item[0])
 
         success_count = 0
         error_count = 0
-        
+
         if not results_log and files_to_process:
-             print("没有任务完成或记录结果，可能是由于早期中断或错误。")
+            print("没有任务完成或记录结果，可能是由于早期中断或错误。")
 
         for original_fp, success, msg_detail in results_log:
             if success:
@@ -210,7 +249,7 @@ def main():
                 # print(f"成功: {original_fp} 已处理。{msg_detail}")
             else:
                 error_count += 1
-                print(f"处理 {original_fp} 时出错: {msg_detail}") # 打印失败文件的完整错误消息
+                print(f"处理 {original_fp} 时出错: {msg_detail}")  # 打印失败文件的完整错误消息
 
         total_attempted_or_logged = len(results_log)
         print(f"\n处理/尝试的任务数（截至中断/完成）: {total_attempted_or_logged} / {len(files_to_process)}")
@@ -222,11 +261,14 @@ def main():
         elif success_count > 0 and total_attempted_or_logged == len(files_to_process) and error_count == 0:
             print("✅ 所有文件均已成功处理！")
         elif success_count > 0:
-             print("✅ 部分文件已成功处理。")
+            print("✅ 部分文件已成功处理。")
         elif total_attempted_or_logged == 0 and len(files_to_process) > 0:
             print("ℹ️ 没有文件被处理（可能是在处理开始前立即中断或设置问题）。")
         else:
             print("ℹ️ 处理运行完成。")
+
+        print(f"🔗 已处理的文件记录保存在: {PROCESSED_DB_PATH}")
+
 
 if __name__ == "__main__":
     main()

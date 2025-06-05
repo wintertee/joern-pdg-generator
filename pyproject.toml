@@ -9,5 +9,4 @@ dependencies = [
     "networkx>=3.4.2",
     "pygraphviz>=1.14",
     "tqdm>=4.67.1",
-    "xdot>=1.4",
 ]

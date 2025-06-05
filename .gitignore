@@ -3,6 +3,7 @@ out/
 cpg.bin
 workspace/
 data/
+scripts/processed_files.txt
 
 
 # Byte-compiled / optimized / DLL files
