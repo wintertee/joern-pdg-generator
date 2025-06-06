@@ -42,7 +42,7 @@ def process_file(args):
         # 2. 运行 c2cpg.sh（Joern前端）。
         c2cpg_path = "/opt/joern/joern-cli/frontends/c2cpg/bin/c2cpg"
         if not os.path.exists(c2cpg_path):
-            c2cpg_path = "~/bin/joern/joern-cli/frontends/c2cpg/bin/c2cpg"
+            c2cpg_path = os.path.expanduser("~/bin/joern/joern-cli/frontends/c2cpg/bin/c2cpg")
         cpg_output = os.path.join(current_file_joern_root, "cpg.bin")
         c2cpg_cmd = [c2cpg_path, abs_file_path, "--output", cpg_output]
         parse_result = subprocess.run(
