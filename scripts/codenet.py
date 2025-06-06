@@ -27,7 +27,7 @@ def process_file(args):
     例如：输入: path/to/file.cpp -> 输出: path/to/file/joern/
     返回: (file_path, success_boolean, message_string)
     """
-    file_path, lang_param, c2cpg_mem = args
+    file_path, lang_param = args
     abs_file_path = os.path.abspath(file_path)
     current_file_joern_root = ""  # 为清晰起见，在早期错误发生时初始化
 
@@ -40,9 +40,11 @@ def process_file(args):
         os.makedirs(current_file_joern_root, exist_ok=True)
 
         # 2. 运行 c2cpg.sh（Joern前端）。
-        c2cpg_path = "c2cpg.sh"
+        c2cpg_path = "/opt/joern/joern-cli/frontends/c2cpg/bin/c2cpg"
+        if not os.path.exists(c2cpg_path):
+            c2cpg_path = "~/bin/joern/joern-cli/frontends/c2cpg/bin/c2cpg"
         cpg_output = os.path.join(current_file_joern_root, "cpg.bin")
-        c2cpg_cmd = [c2cpg_path, c2cpg_mem, abs_file_path, "--output", cpg_output]
+        c2cpg_cmd = [c2cpg_path, abs_file_path, "--output", cpg_output]
         parse_result = subprocess.run(
             c2cpg_cmd,
             cwd=current_file_joern_root,
@@ -52,7 +54,7 @@ def process_file(args):
             check=False,
         )
         if parse_result.returncode != 0:
-            print(f"\n[ERROR] c2cpg.sh 执行失败: {' '.join(c2cpg_cmd)}")
+            print(f"\n[ERROR] c2cpg 执行失败: {' '.join(c2cpg_cmd)}")
             print(f"[STDOUT]:\n{parse_result.stdout}")
             print(f"[STDERR]:\n{parse_result.stderr}")
             raise subprocess.CalledProcessError(
@@ -170,7 +172,6 @@ def main():
     parser.add_argument(
         "--num_workers", type=int, default=multiprocessing.cpu_count(), help="并行进程数，默认等于CPU核心数"
     )
-    parser.add_argument("--c2cpg_mem", type=str, default="-J-Xmx1024m", help="c2cpg.sh 最大内存参数，默认'-J-Xmx1024m'")
     args = parser.parse_args()
 
     print("--------------------------------------------------------------------------")
@@ -214,7 +215,7 @@ def main():
     print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序，已跳过已处理文件)。")
     print("ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
 
-    tasks_args = [(fp, LANG, args.c2cpg_mem) for fp in files_to_process]
+    tasks_args = [(fp, LANG,) for fp in files_to_process]
     num_workers = args.num_workers
     # num_workers = max(1, min(cpu_cores // 2, 16))
     # num_workers = 1 # 用于调试
