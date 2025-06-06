@@ -80,12 +80,12 @@ def add_virtual_root(graph):
     """
     Add a virtual root node connecting to all method nodes in the graph.
     """
-    virtual_root = "VIRTUAL_ROOT"
+    virtual_root = "FILE"
     if virtual_root not in graph:
-        graph.add_node(virtual_root, label="VIRTUAL_ROOT")
+        graph.add_node(virtual_root, label="FILE")
         for node, data in graph.nodes(data=True):
             if data["label"] == "METHOD":
-                graph.add_edge(virtual_root, node, label="VIRTUAL_ROOT_EDGE")
+                graph.add_edge(virtual_root, node, label="AST")
         logger.info(f"Added virtual root node {virtual_root} to the graph.")
 
 

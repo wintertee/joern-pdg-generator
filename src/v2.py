@@ -24,21 +24,9 @@ def main():
 
     utils.setup_logging(args.verbose)
 
-    node_filter: CPGTemplate = (
-    CPG.METHOD_
-    + CPG.TYPE
-    + CPG.AST
-    + CPG.CALLGRAPH_CALL_
-    + CPG.PDG_DDG_
-)
+    node_filter: CPGTemplate = CPG.METHOD_ + CPG.AST + CPG.CALLGRAPH_CALL_ + CPG.PDG_DDG_
 
-    edge_filter: CPGTemplate = (
-        CPGTemplate()
-        + CPG.METHOD_
-        + CPG.TYPE
-        + CPG.CALLGRAPH_CALL_
-        + CPG.PDG_DDG_
-    )
+    edge_filter: CPGTemplate = CPG.METHOD_ + CPG.CALLGRAPH_CALL_ + CPG.PDG_DDG_
 
     if args.ast:
         node_filter += CPG.AST
@@ -88,6 +76,9 @@ def main():
 
     graph_pruner.prune()
     graph_pruner.remove_isolated_nodes()
+
+    if not args.ast:
+        utils.add_virtual_root(graph)
 
     # Render the graph as an SVG file
     pretty_graph(graph)

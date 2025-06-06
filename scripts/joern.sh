@@ -48,4 +48,4 @@ python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$l
 
 python ./src/v2.py ./out/joern/all/export.dot --cfg ./out/joern/cfg/* --lang "$lang" --ast -o ./out/ast_v2.dot
 
-# python src/visualization.py ./out/joern/all/export.dot
+python src/visualization.py ./out/joern/all/export.dot
