@@ -5,8 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiofiles>=24.1.0",
     "colorlog>=6.9.0",
     "networkx>=3.4.2",
+    "openai>=1.84.0",
     "pygraphviz>=1.14",
+    "python-dotenv>=1.1.0",
     "tqdm>=4.67.1",
 ]
