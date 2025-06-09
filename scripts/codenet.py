@@ -41,11 +41,8 @@ def process_file(args):
         os.makedirs(current_file_joern_root, exist_ok=True)
 
         # 2. 运行 c2cpg.sh（Joern前端）。
-        c2cpg_path = "/opt/joern/joern-cli/frontends/c2cpg/bin/c2cpg"
-        if not os.path.exists(c2cpg_path):
-            c2cpg_path = os.path.expanduser("~/bin/joern/joern-cli/frontends/c2cpg/bin/c2cpg")
         cpg_output = os.path.join(current_file_joern_root, "cpg.bin")
-        c2cpg_cmd = [c2cpg_path, abs_file_path, "--output", cpg_output]
+        c2cpg_cmd = ["joern-parse", abs_file_path, "--output", cpg_output]
         parse_result = subprocess.run(
             c2cpg_cmd,
             cwd=current_file_joern_root,
@@ -200,6 +197,7 @@ def main():
 
     # 断点续跑数据库文件
     PROCESSED_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processed_files.txt")
+    FAILED_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "failed_files.txt")
     processed_files_set = set()
     if os.path.exists(PROCESSED_DB_PATH):
         with open(PROCESSED_DB_PATH, "r", encoding="utf-8") as f:
@@ -216,7 +214,13 @@ def main():
     print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序，已跳过已处理文件)。")
     print("ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
 
-    tasks_args = [(fp, LANG,) for fp in files_to_process]
+    tasks_args = [
+        (
+            fp,
+            LANG,
+        )
+        for fp in files_to_process
+    ]
     num_workers = args.num_workers
     # num_workers = max(1, min(cpu_cores // 2, 16))
     # num_workers = 1 # 用于调试
@@ -263,6 +267,13 @@ def main():
                 for fp in new_success_files:
                     f.write(fp + "\n")
 
+        # 统一写入本轮新失败的文件到 failed_files.txt
+        new_failed_files = [os.path.abspath(fp) for fp, success, _ in results_log if not success]
+        if new_failed_files:
+            with open(FAILED_DB_PATH, "a", encoding="utf-8") as f:
+                for fp in new_failed_files:
+                    f.write(fp + "\n")
+
         print("\n--- 📊 处理摘要 ---")
 
         # 根据原始文件名对结果进行排序
@@ -300,6 +311,8 @@ def main():
             print("ℹ️ 处理运行完成。")
 
         print(f"🔗 已处理的文件记录保存在: {PROCESSED_DB_PATH}")
+        if new_failed_files:
+            print(f"❌ 失败的文件记录保存在: {FAILED_DB_PATH}")
 
 
 if __name__ == "__main__":
