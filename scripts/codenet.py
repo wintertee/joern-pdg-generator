@@ -170,6 +170,11 @@ def main():
     parser.add_argument(
         "--num_workers", type=int, default=multiprocessing.cpu_count(), help="并行进程数，默认等于CPU核心数"
     )
+    parser.add_argument(
+        "--file_list",
+        type=str,
+        help="包含要处理的文件列表的文件路径。如果提供，则从此文件读取文件列表而不使用glob模式搜索",
+    )
     args = parser.parse_args()
 
     print("--------------------------------------------------------------------------")
@@ -178,8 +183,11 @@ def main():
     print("--------------------------------------------------------------------------")
     print("📋 先决条件:")
     print("  1. Joern (joern-parse, joern-export) 必须已安装并在您的 PATH 中。")
-    print(f"  2. 数据集 (例如 Project_CodeNet_C++1000) 必须位于: {os.path.abspath(BASE_DATA_PATH)}")
-    print(f"  3. 分析脚本必须存在于: {V2_PY_SCRIPT}")
+    if not args.file_list:
+        print(f"  2. 数据集 (例如 Project_CodeNet_C++1000) 必须位于: {os.path.abspath(BASE_DATA_PATH)}")
+    print(f"  {'3' if not args.file_list else '2'}. 分析脚本必须存在于: {V2_PY_SCRIPT}")
+    if args.file_list:
+        print("  3. 文件列表格式: 每行一个文件路径，支持 # 开头的注释行")
     print("随时按 Ctrl+C 中断处理。")
     print("--------------------------------------------------------------------------\n")
 
@@ -187,13 +195,39 @@ def main():
         print(f"🔴 严重错误: 未找到分析脚本 {V2_PY_SCRIPT}。正在退出。")
         return
 
-    if not os.path.isdir(BASE_DATA_PATH):
-        print(f"🔴 严重错误: 基础数据路径 {os.path.abspath(BASE_DATA_PATH)} 不存在或不是目录。正在退出。")
-        return
+    # 根据是否提供文件列表选择不同的文件发现方式
+    if args.file_list:
+        # 从文件列表读取文件
+        if not os.path.exists(args.file_list):
+            print(f"🔴 严重错误: 指定的文件列表 {args.file_list} 不存在。正在退出。")
+            return
 
-    print(f"🔍 正在使用模式搜索 '{LANG}' 文件: {FILE_GLOB_PATTERN}...")
-    # 按文件名排序文件列表
-    files_to_process = sorted(glob.glob(FILE_GLOB_PATTERN))
+        print(f"📂 从文件列表读取要处理的文件: {args.file_list}...")
+        files_to_process = []
+        try:
+            with open(args.file_list, "r", encoding="utf-8") as f:
+                for line in f:
+                    file_path = line.strip()
+                    if file_path and not file_path.startswith("#"):  # 跳过空行和注释行
+                        if os.path.exists(file_path):
+                            files_to_process.append(file_path)
+                        else:
+                            print(f"⚠️ 警告: 文件不存在，跳过: {file_path}")
+        except Exception as e:
+            print(f"🔴 严重错误: 无法读取文件列表 {args.file_list}: {e}")
+            return
+
+        files_to_process = sorted(files_to_process)
+        print(f"📋 从文件列表中读取到 {len(files_to_process)} 个有效文件。")
+    else:
+        # 使用原有的glob模式搜索
+        if not os.path.isdir(BASE_DATA_PATH):
+            print(f"🔴 严重错误: 基础数据路径 {os.path.abspath(BASE_DATA_PATH)} 不存在或不是目录。正在退出。")
+            return
+
+        print(f"🔍 正在使用模式搜索 '{LANG}' 文件: {FILE_GLOB_PATTERN}...")
+        # 按文件名排序文件列表
+        files_to_process = sorted(glob.glob(FILE_GLOB_PATTERN))
 
     # 断点续跑数据库文件
     PROCESSED_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processed_files.txt")
@@ -205,13 +239,23 @@ def main():
                 processed_files_set.add(line.strip())
 
     # 过滤掉已处理的文件
+    original_count = len(files_to_process)
     files_to_process = [fp for fp in files_to_process if os.path.abspath(fp) not in processed_files_set]
+    filtered_count = original_count - len(files_to_process)
 
     if not files_to_process:
-        print("所有文件均已处理，无需重复处理。")
+        if args.file_list:
+            print("文件列表中的所有文件均已处理，无需重复处理。")
+        else:
+            print("所有文件均已处理，无需重复处理。")
         return
 
-    print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序，已跳过已处理文件)。")
+    if args.file_list:
+        print(f"✅ 文件列表中有 {len(files_to_process)} 个文件需要处理")
+        if filtered_count > 0:
+            print(f"   (已跳过 {filtered_count} 个已处理的文件)")
+    else:
+        print(f"✅ 找到 {len(files_to_process)} 个要处理的文件 (已按文件名排序，已跳过已处理文件)。")
     print("ℹ️  每个文件 'path/to/file.ext' 的输出将位于 'path/to/file/joern/'。")
 
     tasks_args = [
