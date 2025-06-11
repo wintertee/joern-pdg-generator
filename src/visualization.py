@@ -68,51 +68,51 @@ class ASTNodeLabel:
         """
         Create an ASTNode instance from node data.
         """
-        factory = cls.factories[node_data["label"]]
+        factory = cls.factories[node_data.get("label")]
         return factory(cls, node_data)
 
     factories = defaultdict(
         lambda: (
             lambda cls, data: (
                 logger.warning(f"No factory found for label '{data['label']}'"),
-                cls(node_type=data["label"]),
+                cls(node_type=data.get("label")),
             )[1]
         )
     )
     factories["BLOCK"] = lambda cls, data: cls(
         node_type="BLOCK",
         line_number=data.get("LINE_NUMBER"),
-        value=data["TYPE_FULL_NAME"],
+        value=data.get("TYPE_FULL_NAME"),
         code=data.get("CODE"),
     )
     factories["CALL"] = lambda cls, data: cls(
         node_type="CALL",
         line_number=data.get("LINE_NUMBER"),
-        value=data["METHOD_FULL_NAME"],
+        value=data.get("METHOD_FULL_NAME"),
         code=data.get("CODE"),
     )
     factories["CONTROL_STRUCTURE"] = lambda cls, data: cls(
         node_type="CONTROL_STRUCTURE",
         line_number=data.get("LINE_NUMBER"),
-        value=data["CONTROL_STRUCTURE_TYPE"],
+        value=data.get("CONTROL_STRUCTURE_TYPE"),
         code=data.get("CODE"),
     )
     factories["FIELD_IDENTIFIER"] = lambda cls, data: cls(
         node_type="FIELD_IDENTIFIER",
         line_number=data.get("LINE_NUMBER"),
-        value=data["CANONICAL_NAME"],
+        value=data.get("CANONICAL_NAME"),
         code=data.get("CODE"),
     )
     factories["IDENTIFIER"] = lambda cls, data: cls(
         node_type="IDENTIFIER",
         line_number=data.get("LINE_NUMBER"),
-        value=data["NAME"],
+        value=data.get("NAME"),
         code=data.get("CODE"),
     )
     factories["JUMP_TARGET"] = lambda cls, data: cls(
         node_type="JUMP_TARGET",
         line_number=data.get("LINE_NUMBER"),
-        value=data["NAME"],
+        value=data.get("NAME"),
         code=data.get("CODE"),
     )
     factories["LITERAL"] = lambda cls, data: cls(
@@ -123,7 +123,7 @@ class ASTNodeLabel:
     factories["LOCAL"] = lambda cls, data: cls(
         node_type="LOCAL",
         line_number=data.get("LINE_NUMBER"),
-        value=data["NAME"],
+        value=data.get("NAME"),
         code=data.get("CODE"),
     )
     factories["MEMBER"] = lambda cls, data: cls(
@@ -135,7 +135,7 @@ class ASTNodeLabel:
     factories["METHOD"] = lambda cls, data: cls(
         node_type="METHOD",
         line_number=data.get("LINE_NUMBER"),
-        value=data["FULL_NAME"],
+        value=data.get("FULL_NAME"),
         # code=data.get("CODE"),
         # ignore code, as only available for CPP
     )
@@ -152,25 +152,25 @@ class ASTNodeLabel:
     factories["METHOD_REF"] = lambda cls, data: cls(
         node_type="METHOD_REF",
         line_number=data.get("LINE_NUMBER"),
-        value=data["METHOD_FULL_NAME"],
+        value=data.get("METHOD_FULL_NAME"),
         code=data.get("CODE"),
     )
     factories["METHOD_RETURN"] = lambda cls, data: cls(
         node_type="METHOD_RETURN",
         line_number=data.get("LINE_NUMBER"),
-        value=data["EVALUATION_STRATEGY"],
+        value=data.get("EVALUATION_STRATEGY"),
         code=data.get("CODE"),
     )
     factories["MODIFIER"] = lambda cls, data: cls(
         node_type="MODIFIER",
         line_number=data.get("LINE_NUMBER"),
-        value=data["MODIFIER_TYPE"],
+        value=data.get("MODIFIER_TYPE"),
         code=data.get("CODE"),
     )
     factories["UNKNOWN"] = lambda cls, data: cls(
         node_type="UNKNOWN",
         line_number=data.get("LINE_NUMBER"),
-        value=data["CONTAINED_REF"],
+        value=data.get("CONTAINED_REF"),
         code=data.get("CODE"),
     )
     factories["RETURN"] = lambda cls, data: cls(
@@ -182,19 +182,19 @@ class ASTNodeLabel:
     factories["TYPE"] = lambda cls, data: cls(
         node_type="TYPE",
         line_number=data.get("LINE_NUMBER"),
-        value=data["NAME"],
+        value=data.get("NAME"),
         code=data.get("CODE"),
     )
     factories["TYPE_DECL"] = lambda cls, data: cls(
         node_type="TYPE_DECL",
         line_number=data.get("LINE_NUMBER"),
-        value=data["FULL_NAME"],
+        value=data.get("FULL_NAME"),
         code=data.get("CODE"),
     )
     factories["TYPE_REF"] = lambda cls, data: cls(
         node_type="TYPE_REF",
         line_number=data.get("LINE_NUMBER"),
-        value=data["TYPE_FULL_NAME"],
+        value=data.get("TYPE_FULL_NAME"),
         # code=data.get("CODE"),
     )
 
@@ -214,7 +214,7 @@ def pretty_label(graph):
     # refernce graph中，label只显示类型。针对每种类型的节点，优化label的显示。
     for node, data in graph.nodes(data=True):
         if "label" in data:
-            data["original_label"] = data["label"]
+            data["original_label"] = data.get("label")
             data["label"] = ASTNodeLabel.from_node_data(data)
 
 
@@ -222,23 +222,23 @@ def color_node(graph):
     # Modify the label for each node
     for node, data in graph.nodes(data=True):
         try:
-            graph.nodes[node]["color"] = CPG_COLORS[data["label"]]
+            graph.nodes[node]["color"] = CPG_COLORS[data.get("label")]
         except KeyError as e:
-            logger.warning(f"Node {node} has no color for label {data['label']}. Error: {e}")
+            logger.warning(f"Node {node} has no color for label {data.get('label')}. Error: {e}")
 
 
 def color_edge(graph):
     # Modify the label for each node
     for u, v, k, data in graph.edges(keys=True, data=True):
-        if data["label"] == "AST":
+        if data.get("label") == "AST":
             graph.edges[u, v, k]["color"] = CPG_COLORS["AST_EDGE"]
-        elif "CFG" in data["label"]:
+        elif "CFG" in data.get("label"):
             graph.edges[u, v, k]["color"] = CPG_COLORS["CFG_EDGE"]
-        elif "DDG" in data["label"] or "REACHING_DEF" in data["label"]:
+        elif "DDG" in data.get("label") or "REACHING_DEF" in data.get("label"):
             graph.edges[u, v, k]["color"] = CPG_COLORS["DDG_EDGE"]
-        elif "CDG" in data["label"]:
+        elif "CDG" in data.get("label"):
             graph.edges[u, v, k]["color"] = CPG_COLORS["CDG_EDGE"]
-        elif "CALL" in data["label"]:
+        elif "CALL" in data.get("label"):
             graph.edges[u, v, k]["color"] = CPG_COLORS["CALL_EDGE"]
 
 

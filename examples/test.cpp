@@ -1,29 +1,9 @@
-class Test
+int main()
 {
-public:
-    int a;
-
-    Test() : a(100) {}
-
-    bool set(int val)
+    int a = 1;
+    if (a > 0)
     {
-        if (val > 0)
-        {
-            a = val;
-            return true;
-        }
-        else
-        {
-            a = 0;
-            return false;
-        }
+        a++;
     }
-};
-
-int main(void)
-{
-    Test h;
-    int val = 10;
-    bool res = h.set(val);
-    return res ? 0 : 1;
+    return a;
 }
