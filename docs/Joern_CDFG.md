@@ -41,12 +41,17 @@ int main()
 
 这里，我认为一种比较好的形式是，CFG在statement level（尽可能简化图），DFG在 Literal/Identifier level（在Data flow上要足够精确，这和[Single static assignment form是一致的](https://se421-fall2018.github.io/resources/lectures/DataFlowGraphs.pdf#page=18.00)）。因此需要使用两种方法分别生成，分别提取CFG和DFG。
 
+?> 这种形式和[Transformers Meet Directed Graphs](https://arxiv.org/abs/2302.00049)的方法是一致的，已经在`src/v2.py`中实现。
+
 ## 分支处理
 
 在遇到`if`或`while`等关键字标志的分支语句时，Joern不会显式说明关键字（实际上在AST中会有关键字节点，但是不同的语言的AST有很大区别。例如在C/C++中，有if、else两个AST节点和分支block，但Python中只有一个if的AST节点），而是只在分支条件上出现多个CFG的出边。参考上图中的`[CALL @7] <operator>.lessThan x<10`：没有while关键字或者True/False判断。这回对表征学习造成显著的信息丢失：我们不知道两个分支对应的True/False。
 
-参考之前的论文（我现在没找到），我们应当额外为分支添加True/False条件，因此应当有下面三种CFG Edge：
+参考[Transformers Meet Directed Graphs](https://arxiv.org/abs/2302.00049)，我们应当额外为分支添加True/False条件，因此至少应当有下面三种CFG Edge：
 
 - CFG_NEXT
 - CFG_TRUE
 - CFG_FALSE
+
+此外，还有其他类型分支，如switch / try-catch等
+
