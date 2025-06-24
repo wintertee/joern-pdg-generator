@@ -75,13 +75,17 @@ async def increment_consecutive_errors():
     global consecutive_errors
     async with error_lock:
         consecutive_errors += 1
-        tqdm_print(f"[{time.strftime('%H:%M:%S')}] ⚠️ 连续错误计数: {consecutive_errors}/{CONSECUTIVE_ERROR_THRESHOLD}")
+        tqdm_print(
+            f"[{time.strftime('%H:%M:%S')}] ⚠️ 连续错误计数: {consecutive_errors}/{CONSECUTIVE_ERROR_THRESHOLD}"
+        )
 
         if consecutive_errors >= CONSECUTIVE_ERROR_THRESHOLD:
             tqdm_print(
                 f"[{time.strftime('%H:%M:%S')}] 💥 PANIC: 连续错误已达到阈值 {CONSECUTIVE_ERROR_THRESHOLD}，程序退出！"
             )
-            tqdm_print("这可能表明存在严重的系统问题，请检查网络连接、API密钥或其他配置。")
+            tqdm_print(
+                "这可能表明存在严重的系统问题，请检查网络连接、API密钥或其他配置。"
+            )
             os._exit(1)  # 强制退出程序
 
 
@@ -90,7 +94,9 @@ async def reset_consecutive_errors():
     global consecutive_errors
     async with error_lock:
         if consecutive_errors > 0:
-            tqdm_print(f"[{time.strftime('%H:%M:%S')}] ✅ 重置连续错误计数器 (之前: {consecutive_errors})")
+            tqdm_print(
+                f"[{time.strftime('%H:%M:%S')}] ✅ 重置连续错误计数器 (之前: {consecutive_errors})"
+            )
             consecutive_errors = 0
 
 
@@ -111,7 +117,9 @@ async def process_and_save_file(input_path: str):
 
     # 如果输出文件已存在，直接跳过
     if os.path.exists(output_filepath):
-        tqdm_print(f"[{time.strftime('%H:%M:%S')}] 🟡 跳过: {output_filename} (文件已存在)")
+        tqdm_print(
+            f"[{time.strftime('%H:%M:%S')}] 🟡 跳过: {output_filename} (文件已存在)"
+        )
         return output_filepath  # 返回路径表示任务已处理
 
     # 读取文件内容
@@ -119,7 +127,9 @@ async def process_and_save_file(input_path: str):
         async with aiofiles.open(input_path, "r", encoding="utf-8") as file:
             content = await file.read()
     except Exception as e:
-        tqdm_print(f"[{time.strftime('%H:%M:%S')}] ❌ 读取文件失败: {input_path}. 错误: {e}")
+        tqdm_print(
+            f"[{time.strftime('%H:%M:%S')}] ❌ 读取文件失败: {input_path}. 错误: {e}"
+        )
         await increment_consecutive_errors()
         return None
 
@@ -144,14 +154,20 @@ async def process_and_save_file(input_path: str):
             # --- 成功后，立刻异步写入文件 ---
             if result_content:
                 async with aiofiles.open(output_filepath, "w", encoding="utf-8") as f:
-                    await f.write(result_content.strip())  # 使用 .strip() 清理可能的前后空白
-                tqdm_print(f"[{time.strftime('%H:%M:%S')}] ✅ 成功并保存: {output_filename}")
+                    await f.write(
+                        result_content.strip()
+                    )  # 使用 .strip() 清理可能的前后空白
+                tqdm_print(
+                    f"[{time.strftime('%H:%M:%S')}] ✅ 成功并保存: {output_filename}"
+                )
 
                 # 成功时重置连续错误计数器
                 await reset_consecutive_errors()
                 return output_filepath  # 成功后返回输出路径
             else:
-                tqdm_print(f"[{time.strftime('%H:%M:%S')}] ⚠️ API返回空内容: {base_filename}")
+                tqdm_print(
+                    f"[{time.strftime('%H:%M:%S')}] ⚠️ API返回空内容: {base_filename}"
+                )
                 await increment_consecutive_errors()
                 return None
 
@@ -163,12 +179,16 @@ async def process_and_save_file(input_path: str):
             await asyncio.sleep(wait_time)
 
         except Exception as e:
-            tqdm_print(f"[{time.strftime('%H:%M:%S')}] ❌ API未知错误: {base_filename}. 错误: {e}")
+            tqdm_print(
+                f"[{time.strftime('%H:%M:%S')}] ❌ API未知错误: {base_filename}. 错误: {e}"
+            )
             # 对于其他类型的错误，可以选择中断重试
             await increment_consecutive_errors()
             return None
 
-    tqdm_print(f"[{time.strftime('%H:%M:%S')}] 💀 任务最终失败: {base_filename} (已达最大重试次数)")
+    tqdm_print(
+        f"[{time.strftime('%H:%M:%S')}] 💀 任务最终失败: {base_filename} (已达最大重试次数)"
+    )
     await increment_consecutive_errors()
     return None
 
@@ -204,7 +224,9 @@ async def main():
 
     end_time = time.time()
 
-    success_count = sum(1 for r in results if r is not None and not isinstance(r, Exception))
+    success_count = sum(
+        1 for r in results if r is not None and not isinstance(r, Exception)
+    )
     failure_count = len(results) - success_count
 
     print("\n--- 任务完成 ---")

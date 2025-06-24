@@ -11,7 +11,10 @@ def null_ddg(edge, data, graph) -> bool:
 
     # Incoming empty DDG edges to METHOD_RETURN
     # Keep return DDG <RET> and CFG edges.
-    if graph.nodes[edge[1]]["label"] == "METHOD_RETURN" and data["label"] not in ["DDG: &lt;RET&gt;", "CFG"]:
+    if graph.nodes[edge[1]]["label"] == "METHOD_RETURN" and data["label"] not in [
+        "DDG: &lt;RET&gt;",
+        "CFG",
+    ]:
         return True
 
     return False

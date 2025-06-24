@@ -5,5 +5,7 @@ int main()
     {
         a++;
     }
+    else
+        a--;
     return a;
 }

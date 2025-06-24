@@ -56,7 +56,11 @@ class ASTNodeLabel:
     code: str | None
 
     def __init__(
-        self, node_type: str, line_number: int | None = None, value: str | None = None, code: str | None = None
+        self,
+        node_type: str,
+        line_number: int | None = None,
+        value: str | None = None,
+        code: str | None = None,
     ):
         self.node_type = node_type
         self.line_number = line_number
@@ -224,7 +228,9 @@ def color_node(graph):
         try:
             graph.nodes[node]["color"] = CPG_COLORS[data.get("label")]
         except KeyError as e:
-            logger.warning(f"Node {node} has no color for label {data.get('label')}. Error: {e}")
+            logger.warning(
+                f"Node {node} has no color for label {data.get('label')}. Error: {e}"
+            )
 
 
 def color_edge(graph):
@@ -245,8 +251,12 @@ def color_edge(graph):
 def main():
     parser = argparse.ArgumentParser(description="Visualize CPG")
     parser.add_argument("input", type=str, help="Input file path")
-    parser.add_argument("--output", type=str, default="./out/pretty.dot", help="Output file path")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "--output", type=str, default="./out/pretty.dot", help="Output file path"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output"
+    )
     args = parser.parse_args()
 
     utils.setup_logging(args.verbose)

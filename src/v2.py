@@ -12,19 +12,37 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Delete nodes and edges from a Graphviz .dot file.")
-    parser.add_argument("input_file", help="Path to the input .dot file.", nargs="?", default="out/all/export.dot")
+    parser = argparse.ArgumentParser(
+        description="Delete nodes and edges from a Graphviz .dot file."
+    )
+    parser.add_argument(
+        "input_file",
+        help="Path to the input .dot file.",
+        nargs="?",
+        default="out/all/export.dot",
+    )
     parser.add_argument("--cfg", nargs="+", help="Paths to the CFG .dot files")
-    parser.add_argument("-o", "--output", default="./out/v2.dot", help="Path to the output .dot file (default: v2.dot)")
-    parser.add_argument("--lang", choices=["py", "java", "cpp"], help="Language of the input files")
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="./out/v2.dot",
+        help="Path to the output .dot file (default: v2.dot)",
+    )
+    parser.add_argument(
+        "--lang", choices=["py", "java", "cpp"], help="Language of the input files"
+    )
     parser.add_argument("--ast", action="store_true", help="Keep AST nodes")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output"
+    )
 
     args = parser.parse_args()
 
     utils.setup_logging(args.verbose)
 
-    node_filter: CPGTemplate = CPG.METHOD_ + CPG.AST + CPG.CALLGRAPH_CALL_ + CPG.PDG_DDG_
+    node_filter: CPGTemplate = (
+        CPG.METHOD_ + CPG.AST + CPG.CALLGRAPH_CALL_ + CPG.PDG_DDG_
+    )
 
     edge_filter: CPGTemplate = CPG.METHOD_ + CPG.CALLGRAPH_CALL_ + CPG.PDG_DDG_
 
@@ -36,7 +54,9 @@ def main():
 
     # Delete nodes with specified labels (partial match)
     nodes_to_remove = [
-        node for node, data in graph.nodes(data=True) if data.get("label") not in node_filter.node_labels
+        node
+        for node, data in graph.nodes(data=True)
+        if data.get("label") not in node_filter.node_labels
     ]
     logger.debug(f"Nodes to remove: {nodes_to_remove}")
     utils.remove_nodes_from(graph, nodes_to_remove)
@@ -61,9 +81,13 @@ def main():
 
     if args.lang == "py":
         if args.ast is None:
-            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_without_ast)
+            graph_pruner.add_prune_function(
+                pruner.langs.python.remove_artifact_nodes_without_ast
+            )
         else:
-            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_with_ast)
+            graph_pruner.add_prune_function(
+                pruner.langs.python.remove_artifact_nodes_with_ast
+            )
     elif args.lang == "cpp":
         graph_pruner.add_prune_function(pruner.langs.cpp.remove_global_import)
 
@@ -71,8 +95,10 @@ def main():
     graph_pruner.add_edge_predicate(pruner.predicates.edges.cdg)
 
     # graph_pruner.add_node_predicate(pruner.predicates.nodes.ast_leaves)
-    graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_method_body)
-    graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_fieldaccess)
+    graph_pruner.add_node_predicate(
+        pruner.predicates.nodes.is_method_implicitly_defined
+    )
+    # graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_fieldaccess)
 
     graph_pruner.prune()
     graph_pruner.remove_isolated_nodes()

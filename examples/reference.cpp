@@ -17,5 +17,5 @@ int main()
     // x is now 6
     int y = increment_by_value(x); // x is passed by value, but the return value is assigned to y
     // x is still 6, y is 7
-    return 0;
+    return y;
 }

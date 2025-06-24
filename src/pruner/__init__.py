@@ -53,7 +53,9 @@ class GraphPruner:
         edges_to_remove = []
         for u, v, k, data in self.graph.edges(keys=True, data=True):
             edge = (u, v, k)
-            if any(predicate(edge, data, self.graph) for predicate in self.edge_predicates):
+            if any(
+                predicate(edge, data, self.graph) for predicate in self.edge_predicates
+            ):
                 edges_to_remove.append(edge)
         remove_edges_from(self.graph, edges_to_remove)
 
@@ -67,6 +69,8 @@ class GraphPruner:
         """
         nodes_to_remove = []
         for node, data in self.graph.nodes(data=True):
-            if any(predicate(node, data, self.graph) for predicate in self.node_predicates):
+            if any(
+                predicate(node, data, self.graph) for predicate in self.node_predicates
+            ):
                 nodes_to_remove.append(node)
         remove_nodes_from(self.graph, nodes_to_remove)

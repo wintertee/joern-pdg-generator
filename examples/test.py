@@ -15,9 +15,6 @@ def main():
     h = Test()
     val = 10
     res = h.set(val)
-    import sys
-
-    sys.exit(0 if res else 1)
 
 
 main()

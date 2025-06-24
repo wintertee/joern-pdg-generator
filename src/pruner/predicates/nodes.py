@@ -1,4 +1,4 @@
-def ast_leaves(node, data, graph) -> bool:
+def is_ast_leaf(node, data, graph) -> bool:
     """
     Some AST leafs are not useful for the analysis, we remove them
     """
@@ -16,7 +16,7 @@ def ast_leaves(node, data, graph) -> bool:
     return False
 
 
-def operator_method_body(node, data, graph) -> bool:
+def is_method_implicitly_defined(node, data, graph) -> bool:
     """
     We remove methods not explicitly defined in the code.
     """

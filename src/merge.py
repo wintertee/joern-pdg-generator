@@ -26,7 +26,9 @@ def read_dot_files(ast_files, cfg_files, pdg_files) -> dict[str, list[nx.Graph]]
         list: List of graphs read from the .dot files
     """
     input_graphs = defaultdict(list)
-    for graph_type, files in zip(["ast", "cfg", "pdg"], [ast_files, cfg_files, pdg_files]):
+    for graph_type, files in zip(
+        ["ast", "cfg", "pdg"], [ast_files, cfg_files, pdg_files]
+    ):
         if files is not None:
             for file_path in files:
                 graph = utils.read_dot_file(file_path)
@@ -89,16 +91,27 @@ def copy_node_data(merged_graph, ref_graph):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Merge multiple Graphviz .dot files into a single graph.")
+    parser = argparse.ArgumentParser(
+        description="Merge multiple Graphviz .dot files into a single graph."
+    )
     parser.add_argument("--ast", nargs="+", help="Paths to the AST .dot files")
     parser.add_argument("--cfg", nargs="+", help="Paths to the CFG .dot files")
     parser.add_argument("--pdg", nargs="+", help="Paths to the PDG .dot files")
     parser.add_argument("--ref", help="Path to the reference .dot file")
-    parser.add_argument("--lang", choices=["py", "java", "cpp"], help="Language of the input files")
-    parser.add_argument("--raw", action="store_true", help="disable pretty label and colorization")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
-        "-o", "--output", default="./out/merged.dot", help="Path to the output .dot file (default: merged.dot)"
+        "--lang", choices=["py", "java", "cpp"], help="Language of the input files"
+    )
+    parser.add_argument(
+        "--raw", action="store_true", help="disable pretty label and colorization"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output"
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="./out/merged.dot",
+        help="Path to the output .dot file (default: merged.dot)",
     )
 
     args = parser.parse_args()
@@ -114,12 +127,16 @@ def main():
     merged_graph = add_call_edges(merged_graph, refer_graph)
 
     graph_pruner = pruner.GraphPruner(merged_graph)
-    
+
     if args.lang == "py":
-        if  args.ast is None:
-            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_without_ast)
+        if args.ast is None:
+            graph_pruner.add_prune_function(
+                pruner.langs.python.remove_artifact_nodes_without_ast
+            )
         else:
-            graph_pruner.add_prune_function(pruner.langs.python.remove_artifact_nodes_with_ast)
+            graph_pruner.add_prune_function(
+                pruner.langs.python.remove_artifact_nodes_with_ast
+            )
     elif args.lang == "cpp":
         graph_pruner.add_prune_function(pruner.langs.cpp.remove_global_import)
 
@@ -127,7 +144,9 @@ def main():
     graph_pruner.add_edge_predicate(pruner.predicates.edges.cdg)
 
     # graph_pruner.add_node_predicate(pruner.predicates.nodes.ast_leaves)
-    graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_method_body)
+    graph_pruner.add_node_predicate(
+        pruner.predicates.nodes.is_method_implicitly_defined
+    )
     graph_pruner.add_node_predicate(pruner.predicates.nodes.operator_fieldaccess)
 
     graph_pruner.prune()

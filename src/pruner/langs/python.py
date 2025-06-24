@@ -19,7 +19,9 @@ def remove_artifact_nodes_with_ast(graph: nx.MultiDiGraph):
             return True
         return False
 
-    good_subroots = [subroot for subroot in subroots if not is_bad_subroot(graph.nodes[subroot])]
+    good_subroots = [
+        subroot for subroot in subroots if not is_bad_subroot(graph.nodes[subroot])
+    ]
 
     good_nodes = set()
     for subroot in good_subroots:
@@ -34,7 +36,6 @@ def remove_artifact_nodes_with_ast(graph: nx.MultiDiGraph):
             graph.remove_node(node)
 
 
-
 def remove_artifact_nodes_without_ast(graph: nx.MultiDiGraph):
     logger.warning("Removing artifact nodes without AST is not implemented yet.")
     return  # TODO: implement this function
@@ -42,11 +43,27 @@ def remove_artifact_nodes_without_ast(graph: nx.MultiDiGraph):
 
     def is_bad_root(data):
         if data.get("label") == "METHOD":
-            bad_root_names = {"<metaClassCallHandler>", "<metaClassAdapter>", "<fakeNew>", "<body>", "<meta>"}
-            return any([bad_root_name in data.get("NAME") for bad_root_name in bad_root_names])
+            bad_root_names = {
+                "<metaClassCallHandler>",
+                "<metaClassAdapter>",
+                "<fakeNew>",
+                "<body>",
+                "<meta>",
+            }
+            return any(
+                [bad_root_name in data.get("NAME") for bad_root_name in bad_root_names]
+            )
         if data.get("label") == "CALL":
-            bad_call_names = {"<metaClassCallHandler>", "<metaClassAdapter>", "<fakeNew>", "<body>", "<meta>"}
-            return any([bad_call_name in data.get("CODE") for bad_call_name in bad_call_names])
+            bad_call_names = {
+                "<metaClassCallHandler>",
+                "<metaClassAdapter>",
+                "<fakeNew>",
+                "<body>",
+                "<meta>",
+            }
+            return any(
+                [bad_call_name in data.get("CODE") for bad_call_name in bad_call_names]
+            )
         return False
 
     good_roots = [root for root in roots if not is_bad_root(graph.nodes[root])]
