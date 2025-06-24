@@ -1,7 +1,7 @@
-class Test {
+class Main {
     protected int a;
 
-    public Test() {
+    public Main() {
         this.a = 100;
     }
 
@@ -17,9 +17,10 @@ class Test {
     }
 
     public static void main(String[] args) {
-        Test h = new Test();
-        int val = 10;
+        Main h = new Main();
+        int val = -10;
         boolean res = h.set(val);
-        System.exit(res ? 0 : 1);
+        System.exit(res==true ? 0 : 1);
     }
 }
+
