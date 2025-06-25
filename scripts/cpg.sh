@@ -6,5 +6,5 @@ fi
 
 filepath="$1"
 
-LD_LIBRARY_PATH=~/miniforge3/envs/cpg/lib/python3.12/site-packages/jep /home/wintertee/cpg/cpg-neo4j/build/install/cpg-neo4j/bin/cpg-neo4j --export-json ./out/cpg-export.json --no-neo4j "$filepath"
-uv run src/json2dot.py ~/testjoern/out/cpg-export.json -o ./out/
+LD_LIBRARY_PATH=~/miniforge3/envs/cpg/lib/python3.12/site-packages/jep ../cpg/cpg-neo4j/build/install/cpg-neo4j/bin/cpg-neo4j --export-json ./out/cpg-export.json --no-neo4j "$filepath"
+uv run src/json2dot.py ./out/cpg-export.json -o ./out/
