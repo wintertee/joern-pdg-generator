@@ -1,9 +1,0 @@
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p00481/s290107647.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p00773/s936823288.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p02263/s369665638.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p02409/s608395031.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p02676/s819266333.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p02997/s459055489.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p03201/s536837787.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p03809/s474604959.cpp
-/data/xq/changran/zhaoyuang/joern-pdg-generator/data/Project_CodeNet_C++1000/p03857/s646501668.cpp
