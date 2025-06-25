@@ -15,7 +15,7 @@ BASE_DATA_PATH = "./data/Project_CodeNet_C++1000"
 # 修改后：这意味着在 BASE_DATA_PATH 下有一级子目录包含源文件。
 FILE_GLOB_PATTERN = os.path.join(BASE_DATA_PATH, "*", f"*.{LANG}")
 # CPG-neo4j 可执行文件的绝对路径
-CPG_NEO4J_EXECUTABLE = "../cpg/cpg-neo4j/build/install/cpg-neo4j/bin/cpg-neo4j"
+CPG_NEO4J_EXECUTABLE = os.path.abspath("../cpg/cpg-neo4j/build/install/cpg-neo4j/bin/cpg-neo4j")
 # json2dot.py 脚本的绝对路径
 JSON2DOT_SCRIPT = os.path.abspath("./src/json2dot.py")
 # --- 配置结束 ---
